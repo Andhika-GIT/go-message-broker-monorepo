@@ -1,11 +1,12 @@
 import { DataTable } from "@/components/data-table";
 
-import data from "../dashboard/data.json";
+import user from "./user.json";
+import { columns } from "./column";
 
 export default function Page() {
   return (
     <>
-      <DataTable data={data} />
+      <DataTable columns={columns} data={user} />
     </>
   );
 }
