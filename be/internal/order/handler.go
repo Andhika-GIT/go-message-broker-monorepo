@@ -20,7 +20,10 @@ func NewOrderHandler(rmq *shared.RabbitMqProducer) *OrderHandler {
 
 func (h *OrderHandler) TestRabbitMq(w http.ResponseWriter, r *http.Request) {
 	q, err := h.rmq.Channel.QueueDeclare(
-		"test_queue", false, false, false, false, nil,
+		"test_queue", true, false, false, false,
+		amqp091.Table{
+			"x-queue-type": "quorum",
+		},
 	)
 
 	if err != nil {
