@@ -10,7 +10,7 @@ func InitApp() *chi.Mux {
 	r := chi.NewRouter()
 
 	v := NewViper()
-	rmq, _ := shared.NewRabbitMqProducer(v)
+	rmq, _ := shared.NewRabbitMqConsumer(v)
 	order.NewOrderModule(rmq)
 
 	return r
