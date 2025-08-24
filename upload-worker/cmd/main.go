@@ -9,5 +9,5 @@ import (
 func main() {
 	r := infrastructure.InitApp()
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3001", r)
 }

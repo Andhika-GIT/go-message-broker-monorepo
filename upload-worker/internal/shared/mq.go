@@ -31,3 +31,13 @@ func NewRabbitMqProducer(viper *viper.Viper) (*RabbitMqProducer, error) {
 		Channel: ch,
 	}, nil
 }
+
+func (c *RabbitMqProducer) Close() {
+	if c.Channel != nil {
+		_ = c.Channel.Close()
+	}
+
+	if c.Conn != nil {
+		_ = c.Conn.Close()
+	}
+}
