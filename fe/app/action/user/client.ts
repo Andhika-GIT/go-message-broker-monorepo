@@ -14,9 +14,6 @@ export const UploadUserExcel = async (file: File): Promise<string | undefined> =
 
     const response = await fetch(BASE_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
       body:formData,
     });
 
