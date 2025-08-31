@@ -7,7 +7,7 @@ import (
 )
 
 func InitApp() *chi.Mux {
-	r := chi.NewRouter()
+	r := NewRouter()
 
 	v := NewViper()
 	rmq, _ := shared.NewRabbitMqProducer(v)
