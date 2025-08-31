@@ -1,7 +1,7 @@
 package user
 
 import (
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
@@ -23,10 +23,18 @@ func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 	file, header, err := r.FormFile("file")
 
 	if err != nil {
-		log.Printf("Failed to read file : %v", err)
+		shared.SendJsonResponse(w, 500, fmt.Sprintf("failed to read file %s", err.Error()), nil)
+		return
 	}
 
 	defer file.Close()
 
-	log.Printf("uploaded file : %s (%d bytes)", header.Filename, header.Size)
+	isAllowedExtension := shared.IsAllowedExtension(header.Filename)
+
+	if !isAllowedExtension {
+		shared.SendJsonResponse(w, 400, "invalid file extension", nil)
+		return
+	}
+
+	shared.SendJsonResponse(w, 200, "success", nil)
 }
