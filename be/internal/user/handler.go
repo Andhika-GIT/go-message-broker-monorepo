@@ -8,12 +8,14 @@ import (
 )
 
 type UserHandler struct {
-	rmq *shared.RabbitMqProducer
+	rmq     *shared.RabbitMqProducer
+	usecase *UserUseCase
 }
 
-func NewUserHandler(rmq *shared.RabbitMqProducer) *UserHandler {
+func NewUserHandler(rmq *shared.RabbitMqProducer, usecase *UserUseCase) *UserHandler {
 	return &UserHandler{
-		rmq: rmq,
+		rmq:     rmq,
+		usecase: usecase,
 	}
 }
 
@@ -33,6 +35,13 @@ func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 
 	if !isAllowedExtension {
 		shared.SendJsonResponse(w, 400, "invalid file extension", nil)
+		return
+	}
+
+	err = h.usecase.ReadFile(file)
+
+	if err != nil {
+		shared.SendJsonErrorResponse(w, err, nil)
 		return
 	}
 

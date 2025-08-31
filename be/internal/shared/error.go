@@ -13,7 +13,7 @@ func (e *Error) Error() string {
 }
 
 // helper constructor
-func New(code int, msg string) *Error {
+func WriteError(code int, msg string) *Error {
 	return &Error{
 		Code:    code,
 		Message: msg,
@@ -22,7 +22,7 @@ func New(code int, msg string) *Error {
 
 // predefined error
 var (
-	ErrBadRequest          = New(400, "Bad Request")
-	ErrNotFound            = New(404, "Not Found")
-	ErrInternalServerError = New(500, "Internal Server Error")
+	ErrBadRequest          = WriteError(400, "Bad Request")
+	ErrNotFound            = WriteError(404, "Not Found")
+	ErrInternalServerError = WriteError(500, "Internal Server Error")
 )

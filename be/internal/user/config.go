@@ -6,6 +6,7 @@ import (
 )
 
 func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer) {
-	handler := NewUserHandler(rmq)
+	usecase := NewUserUseCase(rmq)
+	handler := NewUserHandler(rmq, usecase)
 	NewUserRoutes(r, handler)
 }
