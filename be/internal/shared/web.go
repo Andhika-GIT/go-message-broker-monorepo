@@ -35,3 +35,18 @@ func SendJsonResponse(w http.ResponseWriter, statusCode int, message string, dat
 
 	_ = json.NewEncoder(w).Encode(res)
 }
+
+func SendJsonErrorResponse(w http.ResponseWriter, err error, data any) {
+	if e, ok := err.(*Error); ok {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(e.Code)
+
+		res := APIResponse{
+			Status:  e.Code,
+			Message: e.Message,
+			Data:    data,
+		}
+
+		_ = json.NewEncoder(w).Encode(res)
+	}
+}
