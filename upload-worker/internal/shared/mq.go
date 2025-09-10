@@ -16,14 +16,14 @@ func NewRabbitMqConsumer(viper *viper.Viper) (*RabbitMqConsumer, error) {
 	conn, err := amqp091.Dial(viper.GetString("RABBITMQ_CONNECTION_URL"))
 
 	if err != nil {
-		panic(fmt.Errorf("fatal error connecting to rabbitmq: %w", err))
+		return nil, err
 
 	}
 
 	ch, err := conn.Channel()
 
 	if err != nil {
-		panic(fmt.Errorf("fatal error connecting to rabbitmq channel: %w", err))
+		return nil, err
 	}
 
 	return &RabbitMqConsumer{
@@ -42,45 +42,38 @@ func (c *RabbitMqConsumer) Close() {
 	}
 }
 
-func (c *RabbitMqConsumer) QueueDeclare() (amqp091.Queue, error) {
-	q, err := c.Channel.QueueDeclare(
-		"test_queue", true, false, false, false,
-		amqp091.Table{
-			"x-queue-type": "quorum",
-		},
+func (r *RabbitMqConsumer) DeclareExchange(exchangeName, exchangeType string) error {
+	return r.Channel.ExchangeDeclare(
+		exchangeName,
+		exchangeType,
+		true,
+		false,
+		false,
+		false,
+		nil,
 	)
-
-	if err != nil {
-		return q, fmt.Errorf("failed to decleare queue : %v", err.Error())
-	}
-
-	err = c.Channel.QueueBind(
-		q.Name, "test", "go-exchange", false, nil,
-	)
-
-	if err != nil {
-		return q, fmt.Errorf("failed to bind queue : %v", err.Error())
-	}
-
-	return q, nil
 }
 
-func (c *RabbitMqConsumer) Consume() (<-chan amqp091.Delivery, error) {
+func (r *RabbitMqConsumer) QueueBind(queueName, exchangeName, routingKey string) error {
+	return r.Channel.QueueBind(
+		queueName,
+		routingKey,
+		exchangeName,
+		false,
+		nil,
+	)
+}
 
-	q, err := c.QueueDeclare()
-
-	if err != nil {
-		return nil, err
-	}
+func (c *RabbitMqConsumer) Consume(queueName string) (<-chan amqp091.Delivery, error) {
 
 	msgs, err := c.Channel.Consume(
-		q.Name, // queue
-		"",     // consumer
-		true,   // auto-ack
-		false,  // exclusive
-		false,  // no-local
-		false,  // no-wait
-		nil,    // args
+		queueName, // queue
+		"",        // consumer
+		true,      // auto-ack
+		false,     // exclusive
+		false,     // no-local
+		false,     // no-wait
+		nil,       // args
 	)
 
 	if err != nil {

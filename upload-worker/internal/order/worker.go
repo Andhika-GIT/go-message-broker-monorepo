@@ -9,7 +9,7 @@ import (
 func StartWorker(rmq *shared.RabbitMqConsumer) {
 	defer rmq.Close()
 
-	msgs, err := rmq.Consume()
+	msgs, err := rmq.Consume(shared.QueueUserDirectImport)
 
 	if err != nil {
 		log.Println(err)
