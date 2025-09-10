@@ -7,16 +7,18 @@ const (
 
 // Routing Keys
 const (
-	RoutingKeyUserImport  = "user.import"
-	RoutingKeyUserExport  = "user.export"
-	RoutingKeyOrderImport = "order.import"
-	RoutingKeyOrderExport = "order.export"
+	RoutingKeyUserDirectImport = "user.import.direct"
+	RoutingKeyUserSftpImport   = "user.import.sftp"
+	RoutingKeyUserExport       = "user.export"
+	RoutingKeyOrderImport      = "order.import"
+	RoutingKeyOrderExport      = "order.export"
 )
 
 // Queue Names
 const (
-	QueueUserImport  = "user.import.q"
-	QueueUserExport  = "user.export.q"
-	QueueOrderImport = "order.import.q"
-	QueueOrderExport = "order.export.q"
+	QueueUserDirectImport = "user.import.direct.q"
+	QueueUserSftpImport   = "user.import.sftp.q"
+	QueueUserExport       = "user.export.q"
+	QueueOrderImport      = "order.import.q"
+	QueueOrderExport      = "order.export.q"
 )
