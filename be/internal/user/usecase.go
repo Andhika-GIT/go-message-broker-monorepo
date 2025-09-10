@@ -19,9 +19,9 @@ func NewUserUseCase(rmq *shared.RabbitMqProducer) *UserUseCase {
 }
 
 func (u *UserUseCase) ReadFile(file multipart.File) error {
-	excel, err := excelize.OpenReader(file)
+	var users []UserImport
 
-	log.Printf("excel: %+v", excel)
+	excel, err := excelize.OpenReader(file)
 
 	if err != nil {
 		return shared.WriteError(500, "error when reading excel")
@@ -38,8 +38,22 @@ func (u *UserUseCase) ReadFile(file multipart.File) error {
 	}
 
 	for i, row := range rows {
-		log.Printf("Row %d: %v\n", i+1, row)
+		if i == 0 {
+			continue
+		}
+
+		if len(row) >= 3 {
+			users = append(users, UserImport{
+				Name:        row[0],
+				Email:       row[1],
+				PhoneNumber: row[2],
+			})
+		}
 	}
+
+	log.Printf("all users : %v", users)
+
+	u.rmq.Publish(shared.QueueUserDirectImport, users)
 
 	return nil
 }
