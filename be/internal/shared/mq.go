@@ -73,7 +73,7 @@ func (c *RabbitMqProducer) Publish(routingKey string, payload any) error {
 	}
 
 	err = c.Channel.Publish(
-		ExchangeGoApp, "test", false, false,
+		ExchangeGoApp, routingKey, false, false,
 		amqp091.Publishing{
 			ContentType: "text/plain",
 			Body:        body,

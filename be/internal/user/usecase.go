@@ -53,7 +53,11 @@ func (u *UserUseCase) ReadFile(file multipart.File) error {
 
 	log.Printf("all users : %v", users)
 
-	u.rmq.Publish(shared.QueueUserDirectImport, users)
+	err = u.rmq.Publish(shared.RoutingKeyUserDirectImport, users)
+
+	if err != nil {
+		return shared.WriteError(500, err.Error())
+	}
 
 	return nil
 }
