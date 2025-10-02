@@ -1,7 +1,3 @@
-Got it 🚀 — here’s a concise but complete **README.md** draft for your project, covering the key points we discussed:
-
----
-
 # Go Message Broker Monorepo (Dev Environment)
 
 ## Requirements
