@@ -10,6 +10,8 @@ services:
       - ./be/.env
     volumes:
       - ./be:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   upload-worker:
     build:
       context: ./upload-worker
@@ -20,6 +22,8 @@ services:
       - ./upload-worker/.env
     volumes:
       - ./upload-worker:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
   fe:
     build:
       context: ./fe
