@@ -1,0 +1,37 @@
+# Binaries
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build folders
+/bin
+/build
+/dist
+
+# Go vendor (kalau gak dipakai vendor)
+vendor/
+
+# Dependency/cache
+*.modcache
+*.tmp
+
+# Logs
+*.log
+
+# Config & runtime
+.env
+
+# IDE/editor
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Git
+.git
+.gitignore
