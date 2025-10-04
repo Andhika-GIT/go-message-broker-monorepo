@@ -1,5 +1,17 @@
 version: "3.9"
 services:
+  db:
+    image: postgres:12
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=go_stream_dev
+    ports:
+      - "5440:5432"
+    volumes:
+      - pgdata-dev:/var/lib/postgresql/data
+    container_name: gmbm-db-c-dev
   be:
     build:
       context: ./be
@@ -12,6 +24,8 @@ services:
       - ./be:/app
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    container_name: gmbm-be-c-dev
+
   upload-worker:
     build:
       context: ./upload-worker
@@ -24,6 +38,7 @@ services:
       - ./upload-worker:/app
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    container_name: gmbm-upload-worker-c-dev
   fe:
     build:
       context: ./fe
@@ -35,4 +50,6 @@ services:
     volumes:
       - ./fe:/app  
       - /app/node_modules
-  
+    container_name: gmbm-fe-c-dev
+volumes:
+  pgdata-dev:
