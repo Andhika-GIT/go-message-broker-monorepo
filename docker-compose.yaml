@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  be:
+    build:
+      context: ./be
+      dockerfile: dockerfile.dev
+    ports:
+      - "3005:3005"
+    env_file:
+      - ./be/.env
+    volumes:
+      - ./be:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  upload-worker:
+    build:
+      context: ./upload-worker
+      dockerfile: dockerfile.dev
+    ports:
+      - "3009:3009"
+    env_file:
+      - ./upload-worker/.env
+    volumes:
+      - ./upload-worker:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+  fe:
+    build:
+      context: ./fe
+      dockerfile: dockerfile.dev
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./fe/.env
+    volumes:
+      - ./fe:/app  
+      - /app/node_modules
+  
