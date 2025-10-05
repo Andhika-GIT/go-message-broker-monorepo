@@ -13,6 +13,7 @@ func InitApp() *chi.Mux {
 
 	v := NewViper()
 	rmq, err := shared.NewRabbitMqConsumer(v)
+	DB := NewDatabase(v)
 
 	if err != nil {
 		log.Fatalf("failed to initialize RabbitMQ connection: %v", err)
@@ -25,7 +26,7 @@ func InitApp() *chi.Mux {
 
 	}
 
-	user.NewUserModule(rmq)
+	user.NewUserModule(rmq, DB)
 
 	return r
 }

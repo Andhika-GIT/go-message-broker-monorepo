@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -22,10 +23,18 @@ func NewDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase) *
 func (w *DirectUploadWorker) Start() {
 	defer w.Rmq.Close()
 
+	ch := make(chan UserImport)
+	c := context.Background()
+
 	msgs, err := w.Rmq.Consume(shared.QueueUserDirectImport)
 
 	if err != nil {
 		log.Println(err)
+	}
+
+	for i := 0; i <= 3; i++ {
+		// create 3 workers
+		go w.UseCase.CreateNewUsers(c, ch)
 	}
 
 	var users []UserImport
@@ -40,9 +49,10 @@ func (w *DirectUploadWorker) Start() {
 		log.Printf("users is %v", users)
 
 		for _, user := range users {
-			log.Printf("Name: %s, Email: %s, Phone: %s\n", user.Name, user.Email, user.PhoneNumber)
-
+			ch <- user
 		}
 	}
+
+	close(ch)
 
 }

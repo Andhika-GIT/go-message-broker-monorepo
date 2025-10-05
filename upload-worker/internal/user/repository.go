@@ -1,7 +1,19 @@
 package user
 
+import (
+	"context"
+
+	"gorm.io/gorm"
+)
+
 type UserRepository struct{}
 
-func (r *UserRepository) Create() {
+func (r *UserRepository) Create(c context.Context, tx *gorm.DB, user *User) error {
+	err := tx.Create(&user).Error
 
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
