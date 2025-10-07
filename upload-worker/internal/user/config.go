@@ -8,7 +8,7 @@ import (
 func NewUserModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB) {
 	userUseCase := NewUserUseCase(&UserRepository{}, DB)
 
-	directUC := NewDirectUploadWorker(rmq, userUseCase)
+	directUC := NewUserDirectUploadWorker(rmq, userUseCase)
 
 	go directUC.Start()
 }

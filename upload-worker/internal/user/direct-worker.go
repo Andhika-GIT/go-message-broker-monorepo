@@ -13,7 +13,7 @@ type DirectUploadWorker struct {
 	UseCase *UserUseCase
 }
 
-func NewDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase) *DirectUploadWorker {
+func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase) *DirectUploadWorker {
 	return &DirectUploadWorker{
 		Rmq:     Rmq,
 		UseCase: UseCase,
