@@ -8,19 +8,19 @@ import (
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 )
 
-type DirectUploadWorker struct {
+type UserDirectUploadWorker struct {
 	Rmq     *shared.RabbitMqConsumer
 	UseCase *UserUseCase
 }
 
-func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase) *DirectUploadWorker {
-	return &DirectUploadWorker{
+func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase) *UserDirectUploadWorker {
+	return &UserDirectUploadWorker{
 		Rmq:     Rmq,
 		UseCase: UseCase,
 	}
 }
 
-func (w *DirectUploadWorker) Start() {
+func (w *UserDirectUploadWorker) Start() {
 	defer w.Rmq.Close()
 
 	ch := make(chan UserImport)
