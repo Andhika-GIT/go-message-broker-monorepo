@@ -18,7 +18,7 @@ func NewOrderHandler(rmq *shared.RabbitMqProducer, usecase *OrderUseCase) *Order
 	}
 }
 
-func (h *OrderHandler) TestRabbitMq(w http.ResponseWriter, r *http.Request) {
+func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
 	err := h.usecase.ReadFile(r)
