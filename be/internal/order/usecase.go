@@ -74,7 +74,7 @@ func (u *OrderUseCase) ReadFile(r *http.Request) error {
 
 	log.Printf("all users : %v", orders)
 
-	err = u.rmq.Publish(shared.QueueOrderDirectImport, orders)
+	err = u.rmq.Publish(shared.RoutingKeyOrderDirectImport, orders)
 
 	if err != nil {
 		return shared.WriteError(500, err.Error())
