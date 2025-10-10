@@ -25,6 +25,7 @@ func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		shared.SendJsonErrorResponse(w, err, nil)
+		return
 	}
 
 	shared.SendJsonResponse(w, 200, "success", nil)
