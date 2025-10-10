@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"log"
 
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/order"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/user"
 	"github.com/go-chi/chi/v5"
@@ -27,6 +28,7 @@ func InitApp() *chi.Mux {
 	}
 
 	user.NewUserModule(rmq, DB)
+	order.NewOrderModule(rmq, DB)
 
 	return r
 }
