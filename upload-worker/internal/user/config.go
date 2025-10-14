@@ -5,10 +5,18 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewUserModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB) {
+type UserModule struct {
+	UserUseCase *UserUseCase
+}
+
+func NewUserModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB) *UserModule {
 	userUseCase := NewUserUseCase(&UserRepository{}, DB)
 
 	directUC := NewUserDirectUploadWorker(rmq, userUseCase)
 
 	go directUC.Start()
+
+	return &UserModule{
+		UserUseCase: userUseCase,
+	}
 }
