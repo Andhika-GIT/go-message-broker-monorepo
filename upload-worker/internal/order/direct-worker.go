@@ -1,6 +1,7 @@
 package order
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -22,13 +23,17 @@ func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase) *
 func (w *OrderDirectWorker) Start() {
 	defer w.Rmq.Close()
 
-	// ch := make(chan OrderImport)
-	// c := context.Background()
+	ch := make(chan OrderImport)
+	c := context.Background()
 
 	msgs, err := w.Rmq.Consume(shared.QueueOrderDirectImport)
 
 	if err != nil {
 		log.Println(err.Error())
+	}
+
+	for i := 0; i <= 3; i++ {
+		go w.UseCase.CreateOrders(c, ch)
 	}
 
 	var orders []OrderImport
@@ -41,7 +46,7 @@ func (w *OrderDirectWorker) Start() {
 		}
 
 		for _, order := range orders {
-			log.Printf("Name: %s, Email: %s, Phone: %s\n", order.Email, order.ProductName, order.Quantity)
+			ch <- order
 		}
 	}
 }

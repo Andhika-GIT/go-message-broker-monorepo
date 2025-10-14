@@ -27,8 +27,8 @@ func InitApp() *chi.Mux {
 
 	}
 
-	user.NewUserModule(rmq, DB)
-	order.NewOrderModule(rmq, DB)
+	userModule := user.NewUserModule(rmq, DB)
+	order.NewOrderModule(rmq, DB, userModule.UserUseCase)
 
 	return r
 }
