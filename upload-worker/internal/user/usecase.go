@@ -45,3 +45,22 @@ func (uc *UserUseCase) CreateNewUsers(c context.Context, ch <-chan UserImport) e
 
 	return nil
 }
+
+func (uc *UserUseCase) FindUserByEmail(c context.Context, userEmail string) (UserResponse, error) {
+	var user User
+
+	tx := uc.DB.WithContext(c)
+
+	err := uc.Repository.FindByEmail(c, tx, &user, userEmail)
+
+	if err != nil {
+		return UserResponse{}, err
+	}
+
+	return UserResponse{
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		PhoneNumber: user.PhoneNumber,
+	}, nil
+}
