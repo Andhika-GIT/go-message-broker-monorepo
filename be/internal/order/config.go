@@ -7,6 +7,6 @@ import (
 
 func NewOrderModule(r chi.Router, rmq *shared.RabbitMqProducer) {
 	usecase := NewOrderUseCase(rmq)
-	handler := NewOrderHandler(rmq, usecase)
+	handler := NewOrderHandler(usecase)
 	NewOrderRoutes(r, handler)
 }

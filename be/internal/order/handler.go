@@ -7,13 +7,11 @@ import (
 )
 
 type OrderHandler struct {
-	rmq     *shared.RabbitMqProducer
 	usecase *OrderUseCase
 }
 
-func NewOrderHandler(rmq *shared.RabbitMqProducer, usecase *OrderUseCase) *OrderHandler {
+func NewOrderHandler(usecase *OrderUseCase) *OrderHandler {
 	return &OrderHandler{
-		rmq:     rmq,
 		usecase: usecase,
 	}
 }

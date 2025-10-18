@@ -7,13 +7,11 @@ import (
 )
 
 type UserHandler struct {
-	rmq     *shared.RabbitMqProducer
 	usecase *UserUseCase
 }
 
-func NewUserHandler(rmq *shared.RabbitMqProducer, usecase *UserUseCase) *UserHandler {
+func NewUserHandler(usecase *UserUseCase) *UserHandler {
 	return &UserHandler{
-		rmq:     rmq,
 		usecase: usecase,
 	}
 }
