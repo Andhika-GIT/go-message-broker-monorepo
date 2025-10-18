@@ -1,7 +1,5 @@
 package user
 
-import "time"
-
 type UserImport struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
@@ -9,10 +7,10 @@ type UserImport struct {
 }
 
 type UserResponse struct {
-	Name        string    `json:"name"`
-	Email       string    `json:"email"`
-	PhoneNumber string    `json:"phoneNumber"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
 }
 
 func ConvertToUsersResponse(users []User) []UserResponse {
@@ -20,10 +18,10 @@ func ConvertToUsersResponse(users []User) []UserResponse {
 
 	for _, user := range users {
 		resp := UserResponse{
+			ID:          user.ID,
 			Name:        user.Name,
 			Email:       user.Email,
 			PhoneNumber: user.PhoneNumber,
-			CreatedAt:   user.CreatedAt,
 		}
 
 		usersResp = append(usersResp, resp)
