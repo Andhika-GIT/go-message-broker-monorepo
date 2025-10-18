@@ -1,8 +1,9 @@
 package user
 
 import (
+	"fmt"
 	"log"
-	"mime/multipart"
+	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/xuri/excelize/v2"
@@ -18,8 +19,20 @@ func NewUserUseCase(rmq *shared.RabbitMqProducer) *UserUseCase {
 	}
 }
 
-func (u *UserUseCase) ReadFile(file multipart.File) error {
-	var users []UserImport
+func (u *UserUseCase) ReadFile(r *http.Request) error {
+	file, header, err := r.FormFile("file")
+
+	if err != nil {
+		return shared.WriteError(500, fmt.Sprintf("failed to read file %s", err.Error()))
+	}
+
+	defer file.Close()
+
+	isFileExtensionCorrect := shared.IsAllowedExtension(header.Filename)
+
+	if !isFileExtensionCorrect {
+		return shared.WriteError(400, "invalid file extension")
+	}
 
 	excel, err := excelize.OpenReader(file)
 
@@ -36,6 +49,8 @@ func (u *UserUseCase) ReadFile(file multipart.File) error {
 	if err != nil {
 		return shared.WriteError(500, "error when getting sheets")
 	}
+
+	var users []UserImport
 
 	for i, row := range rows {
 		if i == 0 {
