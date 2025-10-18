@@ -1,22 +1,45 @@
 package user
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 )
 
 type UserUseCase struct {
-	rmq *shared.RabbitMqProducer
+	Repository *UserRepository
+	rmq        *shared.RabbitMqProducer
+	DB         *gorm.DB
 }
 
-func NewUserUseCase(rmq *shared.RabbitMqProducer) *UserUseCase {
+func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, DB *gorm.DB) *UserUseCase {
 	return &UserUseCase{
-		rmq: rmq,
+		Repository: Repository,
+		rmq:        rmq,
+		DB:         DB,
 	}
+}
+
+func (u *UserUseCase) FindAllUsers(c context.Context) ([]UserResponse, error) {
+	var users []User
+
+	tx := u.DB.WithContext(c)
+
+	err := u.Repository.FindAll(c, tx, &users)
+
+	if err != nil {
+		return nil, shared.WriteError(500, fmt.Sprintf("failed to find all users %s", err.Error()))
+	}
+
+	response := ConvertToUsersResponse(users)
+
+	return response, nil
+
 }
 
 func (u *UserUseCase) ReadFile(r *http.Request) error {
