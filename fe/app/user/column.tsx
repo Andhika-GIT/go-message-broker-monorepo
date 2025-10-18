@@ -1,6 +1,6 @@
 'use client'
 
-import { UserSchema } from "@/lib/schemas"
+import { User, UserSchema } from "@/lib/schemas"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ColumnDef } from "@tanstack/react-table"
 import {
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { IconDotsVertical } from "@tabler/icons-react"
 import z from "zod"
 
-export const columns: ColumnDef<z.infer<typeof UserSchema>>[] = [
+export const columns: ColumnDef<User>[] = [
 
   {
     id: "select",
@@ -56,10 +56,10 @@ export const columns: ColumnDef<z.infer<typeof UserSchema>>[] = [
     },
   },
   {
-    accessorKey: "phone",
+    accessorKey: "phone_number",
     header: "Phone Number",
     cell: ({ row }) => {
-        return row.original.phone
+        return row.original.phone_number
     },
   },
   
