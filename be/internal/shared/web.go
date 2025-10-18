@@ -7,6 +7,7 @@ import (
 
 type APIResponse struct {
 	Status  int    `json:"status"`
+	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
 }
@@ -29,6 +30,7 @@ func SendJsonResponse(w http.ResponseWriter, statusCode int, message string, dat
 
 	res := APIResponse{
 		Status:  statusCode,
+		Success: true,
 		Message: message,
 		Data:    data,
 	}
@@ -43,6 +45,7 @@ func SendJsonErrorResponse(w http.ResponseWriter, err error, data any) {
 
 		res := APIResponse{
 			Status:  e.Code,
+			Success: false,
 			Message: e.Message,
 			Data:    data,
 		}
