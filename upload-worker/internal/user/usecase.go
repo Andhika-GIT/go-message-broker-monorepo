@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"gorm.io/gorm"
@@ -24,7 +25,23 @@ func (uc *UserUseCase) CreateNewUsers(c context.Context, ch <-chan UserImport) e
 	for user := range ch {
 		tx := uc.DB.WithContext(c).Begin()
 
-		err := uc.Repository.Create(c, tx, &User{
+		err := uc.Repository.FindByEmail(c, tx, &User{}, user.Email)
+
+		// if user email already exist, throw error
+		if err == nil {
+			tx.Rollback()
+			log.Printf("user already exist")
+			continue
+		}
+
+		// other error besides not found from Repository.FindByEmail
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			tx.Rollback()
+			log.Printf("unexpected error: %v", err)
+			continue
+		}
+
+		err = uc.Repository.Create(c, tx, &User{
 			Name:        user.Name,
 			Email:       user.Email,
 			PhoneNumber: user.PhoneNumber,
