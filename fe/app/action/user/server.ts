@@ -1,8 +1,9 @@
-import { handleFetchResponse, SERVER_BASE_URL_FOR_CLIENT } from "@/lib/helper";
-import { Error, User } from "@/lib/types";
+import { handleFetchResponse, SERVER_BASE_URL } from "@/lib/helper";
+import { Error } from "@/lib/types";
+import { User } from "@/lib/schemas";
 
-export const GetAllUsers = async (): Promise<User[] | undefined> => {
-  const BASE_URL = `${SERVER_BASE_URL_FOR_CLIENT}/user`;
+export const getAllUsers = async (): Promise<User[] | undefined> => {
+  const BASE_URL = `${SERVER_BASE_URL}/user`;
 
   try {
     const response = await fetch(BASE_URL, {
