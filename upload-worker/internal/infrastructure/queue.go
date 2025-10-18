@@ -23,5 +23,10 @@ func InitQueue(rmq *shared.RabbitMqConsumer) error {
 		return err
 	}
 
+	// --- Order Queues ---
+	if err := rmq.QueueBind(shared.QueueOrderDirectImport, shared.ExchangeGoApp, shared.RoutingKeyOrderDirectImport); err != nil {
+		return err
+	}
+
 	return nil
 }

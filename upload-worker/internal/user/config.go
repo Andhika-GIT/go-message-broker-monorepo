@@ -2,12 +2,21 @@ package user
 
 import (
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"gorm.io/gorm"
 )
 
-func NewUserModule(rmq *shared.RabbitMqConsumer) {
-	userUseCase := NewUserUseCase(&UserRepository{})
+type UserModule struct {
+	UserUseCase *UserUseCase
+}
 
-	directUC := NewDirectUploadWorker(rmq, userUseCase)
+func NewUserModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB) *UserModule {
+	userUseCase := NewUserUseCase(&UserRepository{}, DB)
+
+	directUC := NewUserDirectUploadWorker(rmq, userUseCase)
 
 	go directUC.Start()
+
+	return &UserModule{
+		UserUseCase: userUseCase,
+	}
 }
