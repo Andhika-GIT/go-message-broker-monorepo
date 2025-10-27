@@ -17,18 +17,29 @@ func NewUserRepository(DB *gorm.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) FindAll(c context.Context, paginationReq *shared.PaginationRequest) ([]User, error) {
+func (r *UserRepository) FindAll(c context.Context, paginationReq *shared.PaginationRequest) (*shared.Paginated[User], error) {
 	var users []User
+	var totalRecords int64
 
 	offset := (paginationReq.Page - 1) * paginationReq.PerPage
 
-	query := r.DB.Offset(offset).Limit(paginationReq.PerPage)
-
-	err := query.Find(&users).Error
+	err := r.DB.WithContext(c).Model(&User{}).Count(&totalRecords).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	return users, nil
+	err = r.DB.Offset(offset).Limit(paginationReq.PerPage).Find(&users).Error
+
+	totalPages := (int(totalRecords) + paginationReq.PerPage - 1) / paginationReq.PerPage
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &shared.Paginated[User]{
+		Data:       users,
+		Total:      totalRecords,
+		TotalPages: totalPages,
+	}, nil
 }

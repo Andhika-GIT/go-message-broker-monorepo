@@ -18,6 +18,12 @@ type PaginationRequest struct {
 	PerPage int `json:"per_page" query:"per_page"`
 }
 
+type Paginated[T any] struct {
+	Data       []T   `json:"data"`
+	Total      int64 `json:"total"`
+	TotalPages int   `json:"total_pages"`
+}
+
 func ReadJsonRequest(request *http.Request, requestData any) error {
 	decoder := json.NewDecoder(request.Body)
 
