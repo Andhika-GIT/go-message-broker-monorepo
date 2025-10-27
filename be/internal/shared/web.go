@@ -3,6 +3,7 @@ package shared
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 )
 
 type APIResponse struct {
@@ -10,6 +11,11 @@ type APIResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
+}
+
+type PaginationRequest struct {
+	Page    int `json:"page" query:"page"`
+	PerPage int `json:"per_page" query:"per_page"`
 }
 
 func ReadJsonRequest(request *http.Request, requestData any) error {
@@ -52,4 +58,29 @@ func SendJsonErrorResponse(w http.ResponseWriter, err error, data any) {
 
 		_ = json.NewEncoder(w).Encode(res)
 	}
+}
+
+func GetPaginationParams(r *http.Request) *PaginationRequest {
+	query := r.URL.Query()
+
+	pageStr := query.Get("page")
+	perPageStr := query.Get("per_page")
+
+	page, err := strconv.Atoi(pageStr)
+
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	perPage, err := strconv.Atoi(perPageStr)
+
+	if err != nil || page < 1 {
+		perPage = 1
+	}
+
+	return &PaginationRequest{
+		Page:    page,
+		PerPage: perPage,
+	}
+
 }
