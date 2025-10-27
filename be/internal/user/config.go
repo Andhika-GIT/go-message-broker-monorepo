@@ -7,7 +7,8 @@ import (
 )
 
 func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer, DB *gorm.DB) {
-	usecase := NewUserUseCase(&UserRepository{}, rmq, DB)
+	repository := NewUserRepository(DB)
+	usecase := NewUserUseCase(repository, rmq, DB)
 	handler := NewUserHandler(usecase)
 	NewUserRoutes(r, handler)
 }

@@ -25,12 +25,9 @@ func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, DB
 	}
 }
 
-func (u *UserUseCase) FindAllUsers(c context.Context) ([]UserResponse, error) {
-	var users []User
+func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.PaginationRequest) ([]UserResponse, error) {
 
-	tx := u.DB.WithContext(c)
-
-	err := u.Repository.FindAll(c, tx, &users)
+	users, err := u.Repository.FindAll(c, paginationReq)
 
 	if err != nil {
 		return nil, shared.WriteError(500, fmt.Sprintf("failed to find all users %s", err.Error()))
