@@ -70,25 +70,23 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Error } from "@/lib/types";
+import { Error, Paginate } from "@/lib/types";
 
-interface DataTableProps<TData extends {id: string | number}> {
+interface DataTableProps<TData extends { id: string | number }> {
   columns: ColumnDef<TData>[];
-  fetchFunction: (page: number, pageSize: number) => Promise<{
-    data: TData[];
-    total: number;
-  }>;
+  fetchFunction: (
+    page: number,
+    pageSize: number
+  ) => Promise<Paginate<TData[]> | undefined>;
 }
 
-
-
-export function DataTable<TData extends {id: string | number}>({
+export function DataTable<TData extends { id: string | number }>({
   columns,
-  fetchFunction
+  fetchFunction,
 }: DataTableProps<TData>) {
   const [data, setData] = React.useState<TData[]>([]);
-  const [totalItems, setTotalItems] = React.useState<number>(0)
-  const [loading, setLoading] = React.useState<boolean>(false)
+  const [totalItems, setTotalItems] = React.useState<number>(0);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [rowSelection, setRowSelection] = React.useState({});
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
@@ -118,27 +116,30 @@ export function DataTable<TData extends {id: string | number}>({
     getSortedRowModel: getSortedRowModel(),
 
     // pagination configuration
-    manualPagination: true,  
-    pageCount: Math.ceil(totalItems / pagination.pageSize), 
+    manualPagination: true,
+    pageCount: Math.ceil(totalItems / pagination.pageSize),
   });
-
 
   // fetch data control
   const fetchDataTable = async (page: number, pageSize: number) => {
     try {
-      const response = await fetchFunction(page, pageSize)
-      setData(response.data)
-      setTotalItems(response.total)
+      const response = await fetchFunction(page, pageSize);
+      if (response) {
+        setData(response.data);
+        setTotalItems(response.total);
+      } else {
+        setData([]);
+        setTotalItems(0);
+      }
+    } catch (e) {
+      const responseError = e as Error;
+      console.log(responseError);
     }
-    catch(e) {
-      const responseError = e as Error
-      console.log(responseError)
-    }
-  }
+  };
 
   React.useEffect(() => {
-    fetchDataTable(pagination.pageIndex, pagination.pageSize)
-  },[pagination.pageIndex, pagination.pageSize])
+    fetchDataTable(pagination.pageIndex + 1, pagination.pageSize);
+  }, [pagination.pageIndex, pagination.pageSize]);
 
   return (
     <Tabs
@@ -205,6 +206,51 @@ export function DataTable<TData extends {id: string | number}>({
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
         <div className="overflow-hidden rounded-lg border">
+          <Table>
+            <TableHeader className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">

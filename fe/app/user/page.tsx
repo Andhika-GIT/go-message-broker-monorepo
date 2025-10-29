@@ -6,13 +6,10 @@ import { UploadSection } from "@/components/molecules";
 import { getAllUsers, UploadUserExcel } from "../action/user";
 
 export default async function Page() {
-
-  const users = await getAllUsers()
-  console.log(users)
   return (
     <>
       <UploadSection uploadFn={UploadUserExcel} />
-      <DataTable columns={columns} data={users || []} />
+      <DataTable columns={columns} fetchFunction={getAllUsers}/>
     </>
   );
 }
