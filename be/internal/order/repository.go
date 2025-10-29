@@ -39,10 +39,6 @@ func (r *OrderRepository) FindAll(c context.Context, paginationReq *shared.Pagin
 
 	totalPages := (int(totalRecords) + paginationReq.PerPage - 1) / paginationReq.PerPage
 
-	if err != nil {
-		return nil, err
-	}
-
 	return &shared.Paginated[Order]{
 		Data:       orders,
 		Total:      totalRecords,
