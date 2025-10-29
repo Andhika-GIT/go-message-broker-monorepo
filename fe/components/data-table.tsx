@@ -122,6 +122,7 @@ export function DataTable<TData extends { id: string | number }>({
 
   // fetch data control
   const fetchDataTable = async (page: number, pageSize: number) => {
+    setLoading(true);
     try {
       const response = await fetchFunction(page, pageSize);
       if (response) {
@@ -134,6 +135,8 @@ export function DataTable<TData extends { id: string | number }>({
     } catch (e) {
       const responseError = e as Error;
       console.log(responseError);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -226,7 +229,19 @@ export function DataTable<TData extends { id: string | number }>({
               ))}
             </TableHeader>
             <TableBody>
-              {table.getRowModel().rows?.length ? (
+              {loading ? (
+                // Loading Skeleton
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    {columns.map((column, colIndex) => (
+                      <TableCell key={colIndex}>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows?.length ? (
+                // Actual Data
                 table.getRowModel().rows.map((row) => (
                   <TableRow key={row.id}>
                     {row.getVisibleCells().map((cell) => (
@@ -240,6 +255,7 @@ export function DataTable<TData extends { id: string | number }>({
                   </TableRow>
                 ))
               ) : (
+                // No Data
                 <TableRow>
                   <TableCell
                     colSpan={columns.length}
