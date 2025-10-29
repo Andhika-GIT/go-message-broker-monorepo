@@ -1,6 +1,7 @@
 package order
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -20,6 +21,24 @@ func NewOrderUseCase(Repository *OrderRepository, rmq *shared.RabbitMqProducer) 
 		Repository: Repository,
 		rmq:        rmq,
 	}
+}
+
+func (u *OrderUseCase) FindAllOrders(c context.Context, paginationReq *shared.PaginationRequest) (*shared.Paginated[OrderResponse], error) {
+	paginated, err := u.Repository.FindAll(c, paginationReq)
+
+	if err != nil {
+		return nil, shared.WriteError(500, fmt.Sprintf("failed to find all users %s", err.Error()))
+	}
+
+	formatedOrders := ConvertToOrdersResponse(paginated.Data)
+
+	// return new paginated response with different type (OrderResponse)
+	return &shared.Paginated[OrderResponse]{
+		Data:       formatedOrders,
+		Total:      paginated.Total,
+		TotalPages: paginated.TotalPages,
+	}, nil
+
 }
 
 func (u *OrderUseCase) ReadFile(r *http.Request) error {
