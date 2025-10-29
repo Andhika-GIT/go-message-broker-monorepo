@@ -11,12 +11,14 @@ import (
 )
 
 type OrderUseCase struct {
-	rmq *shared.RabbitMqProducer
+	Repository *OrderRepository
+	rmq        *shared.RabbitMqProducer
 }
 
-func NewOrderUseCase(rmq *shared.RabbitMqProducer) *OrderUseCase {
+func NewOrderUseCase(Repository *OrderRepository, rmq *shared.RabbitMqProducer) *OrderUseCase {
 	return &OrderUseCase{
-		rmq: rmq,
+		Repository: Repository,
+		rmq:        rmq,
 	}
 }
 
@@ -67,7 +69,7 @@ func (u *OrderUseCase) ReadFile(r *http.Request) error {
 			orders = append(orders, OrderImport{
 				Email:       row[0],
 				ProductName: row[1],
-				Quantity:    quantity,
+				Quantity:    int64(quantity),
 			})
 		}
 	}
