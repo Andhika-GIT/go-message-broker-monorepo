@@ -1,7 +1,6 @@
 package user
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
@@ -20,9 +19,9 @@ func NewUserHandler(usecase *UserUseCase) *UserHandler {
 func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	paginationReq := shared.GetPaginationParams(r)
 
-	log.Printf("pagination result is %v", paginationReq)
+	userFilter := BindUserFilterFromRequest(r)
 
-	users, err := h.usecase.FindAllUsers(r.Context(), paginationReq)
+	users, err := h.usecase.FindAllUsers(r.Context(), paginationReq, userFilter)
 
 	if err != nil {
 		shared.SendJsonErrorResponse(w, err, nil)
