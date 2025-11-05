@@ -13,19 +13,8 @@ type UserResponse struct {
 	PhoneNumber string `json:"phone_number"`
 }
 
-func ConvertToUsersResponse(users []User) []UserResponse {
-	var usersResp []UserResponse
-
-	for _, user := range users {
-		resp := UserResponse{
-			ID:          user.ID,
-			Name:        user.Name,
-			Email:       user.Email,
-			PhoneNumber: user.PhoneNumber,
-		}
-
-		usersResp = append(usersResp, resp)
-	}
-
-	return usersResp
+type UserFilter struct {
+	Name        string
+	Email       string
+	PhoneNumber string
 }
