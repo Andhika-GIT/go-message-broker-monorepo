@@ -2,25 +2,6 @@
 
 import * as React from "react";
 import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type UniqueIdentifier,
-} from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  arrayMove,
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
@@ -30,21 +11,11 @@ import {
   IconPlus,
 } from "@tabler/icons-react";
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  Row,
-  SortingState,
-  useReactTable,
-  VisibilityState,
+  ColumnDef, flexRender,
+  getCoreRowModel, getPaginationRowModel,
+  getSortedRowModel, SortingState,
+  useReactTable
 } from "@tanstack/react-table";
-import { z, ZodAny } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -72,6 +43,9 @@ import {
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Error, Paginate } from "@/lib/types";
 
+import { useDebounce } from 'use-debounce';
+import { Input } from "./ui/input";
+
 interface DataTableProps<TData extends { id: string | number }> {
   columns: ColumnDef<TData>[];
   fetchFunction: (
@@ -84,6 +58,8 @@ export function DataTable<TData extends { id: string | number }>({
   columns,
   fetchFunction,
 }: DataTableProps<TData>) {
+  const [search, setSearch] = React.useState<string>('')
+  const [searchValue] = useDebounce(search, 2000)
   const [data, setData] = React.useState<TData[]>([]);
   const [totalItems, setTotalItems] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -144,6 +120,10 @@ export function DataTable<TData extends { id: string | number }>({
     fetchDataTable(pagination.pageIndex + 1, pagination.pageSize);
   }, [pagination.pageIndex, pagination.pageSize]);
 
+  React.useEffect(() => {
+    console.log(searchValue)
+  }, [searchValue])
+
   return (
     <Tabs
       defaultValue="outline"
@@ -188,10 +168,7 @@ export function DataTable<TData extends { id: string | number }>({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
+          <Input type="email" placeholder="search by name or email..." onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="flex items-center gap-2">
           <label
