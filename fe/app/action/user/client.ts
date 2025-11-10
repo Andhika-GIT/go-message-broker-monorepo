@@ -27,9 +27,19 @@ export const UploadUserExcel = async (file: File): Promise<string | undefined> =
 };
 
 
-export const getAllUsers = async (page: number, pageSize: number): Promise<FetchResult | undefined> => {
-  const BASE_URL = `${SERVER_BASE_URL_FOR_CLIENT}/user?page=${page}&per_page=${pageSize}`;
+export const getAllUsers = async (page: number, pageSize: number, search: null | string = null): Promise<FetchResult | undefined> => {
 
+  const params = new URLSearchParams({
+    page: page.toString(),
+    per_page: pageSize.toString(),
+  });
+
+  if (search && search.trim() !== '') {
+    params.append('search', search.trim());
+  }
+
+  const BASE_URL = `${SERVER_BASE_URL_FOR_CLIENT}/user?${params.toString()}`;
+  
   try {
     const response = await fetch(BASE_URL, {
       method: "GET",

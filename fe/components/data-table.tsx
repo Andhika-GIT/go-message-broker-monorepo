@@ -50,7 +50,8 @@ interface DataTableProps<TData extends { id: string | number }> {
   columns: ColumnDef<TData>[];
   fetchFunction: (
     page: number,
-    pageSize: number
+    pageSize: number,
+    search?: null | string
   ) => Promise<Paginate<TData[]> | undefined>;
 }
 
@@ -59,7 +60,7 @@ export function DataTable<TData extends { id: string | number }>({
   fetchFunction,
 }: DataTableProps<TData>) {
   const [search, setSearch] = React.useState<string>('')
-  const [searchValue] = useDebounce(search, 2000)
+  const [searchValue] = useDebounce(search, 1000)
   const [data, setData] = React.useState<TData[]>([]);
   const [totalItems, setTotalItems] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
@@ -97,10 +98,10 @@ export function DataTable<TData extends { id: string | number }>({
   });
 
   // fetch data control
-  const fetchDataTable = async (page: number, pageSize: number) => {
+  const fetchDataTable = async (page: number, pageSize: number, search?: null | string) => {
     setLoading(true);
     try {
-      const response = await fetchFunction(page, pageSize);
+      const response = await fetchFunction(page, pageSize, search);
       if (response) {
         setData(response.data);
         setTotalItems(response.total);
@@ -122,6 +123,7 @@ export function DataTable<TData extends { id: string | number }>({
 
   React.useEffect(() => {
     console.log(searchValue)
+    fetchDataTable(pagination.pageIndex + 1, pagination.pageSize, searchValue)
   }, [searchValue])
 
   return (
