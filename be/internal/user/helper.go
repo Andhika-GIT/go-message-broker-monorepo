@@ -28,11 +28,20 @@ func BindUserFilterFromRequest(r *http.Request) *UserFilter {
 		Name:        r.URL.Query().Get("name"),
 		Email:       r.URL.Query().Get("email"),
 		PhoneNumber: r.URL.Query().Get("phone_number"),
+		Search:      r.URL.Query().Get("search"),
 	}
 }
 
 func FilterUserQuery(filter *UserFilter, query *gorm.DB) *gorm.DB {
 
+	if filter.Search != "" {
+		query = query.Where(
+			"LOWER(name) ILIKE LOWER(?) OR LOWER(email) ILIKE LOWER(?) OR LOWER(phone_number) ILIKE LOWER(?)",
+			"%"+filter.Search+"%",
+			"%"+filter.Search+"%",
+			"%"+filter.Search+"%",
+		)
+	}
 	if filter.Name != "" {
 		query = query.Where("name LIKE ?", "%"+filter.Name+"%")
 	}

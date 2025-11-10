@@ -17,4 +17,5 @@ type UserFilter struct {
 	Name        string
 	Email       string
 	PhoneNumber string
+	Search      string
 }
