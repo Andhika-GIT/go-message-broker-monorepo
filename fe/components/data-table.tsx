@@ -118,12 +118,18 @@ export function DataTable<TData extends { id: string | number }>({
   };
 
   React.useEffect(() => {
-    fetchDataTable(pagination.pageIndex + 1, pagination.pageSize);
+    fetchDataTable(pagination.pageIndex + 1, pagination.pageSize, searchValue);
   }, [pagination.pageIndex, pagination.pageSize]);
 
   React.useEffect(() => {
     console.log(searchValue)
-    fetchDataTable(pagination.pageIndex + 1, pagination.pageSize, searchValue)
+
+    setPagination(prev => ({
+      ...prev,
+      pageIndex: 0
+    }));
+
+    fetchDataTable(0, pagination.pageSize, searchValue)
   }, [searchValue])
 
   return (
