@@ -23,8 +23,8 @@ func NewOrderUseCase(Repository *OrderRepository, rmq *shared.RabbitMqProducer) 
 	}
 }
 
-func (u *OrderUseCase) FindAllOrders(c context.Context, paginationReq *shared.PaginationRequest) (*shared.Paginated[OrderResponse], error) {
-	paginated, err := u.Repository.FindAll(c, paginationReq)
+func (u *OrderUseCase) FindAllOrders(c context.Context, paginationReq *shared.PaginationRequest, filter *OrderFilter) (*shared.Paginated[OrderResponse], error) {
+	paginated, err := u.Repository.FindAll(c, paginationReq, filter)
 
 	if err != nil {
 		return nil, shared.WriteError(500, fmt.Sprintf("failed to find all users %s", err.Error()))

@@ -27,7 +27,7 @@ func (r *UserRepository) FindAll(c context.Context, paginationReq *shared.Pagina
 
 	query := FilterUserQuery(filter, baseQuery)
 
-	err := query.Count(&totalRecords).Error
+	err := query.Session(&gorm.Session{}).Count(&totalRecords).Error
 
 	if err != nil {
 		return nil, err

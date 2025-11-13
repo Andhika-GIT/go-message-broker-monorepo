@@ -19,7 +19,9 @@ func NewOrderHandler(usecase *OrderUseCase) *OrderHandler {
 func (h *OrderHandler) GetAllOrders(w http.ResponseWriter, r *http.Request) {
 	paginationReq := shared.GetPaginationParams(r)
 
-	orders, err := h.usecase.FindAllOrders(r.Context(), paginationReq)
+	orderFilter := BindOrderFilterFromRequest(r)
+
+	orders, err := h.usecase.FindAllOrders(r.Context(), paginationReq, orderFilter)
 
 	if err != nil {
 		shared.SendJsonErrorResponse(w, err, nil)

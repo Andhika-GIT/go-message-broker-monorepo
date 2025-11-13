@@ -17,7 +17,7 @@ func NewOrderRepository(DB *gorm.DB) *OrderRepository {
 	}
 }
 
-func (r *OrderRepository) FindAll(c context.Context, paginationReq *shared.PaginationRequest) (*shared.Paginated[Order], error) {
+func (r *OrderRepository) FindAll(c context.Context, paginationReq *shared.PaginationRequest, filter *OrderFilter) (*shared.Paginated[Order], error) {
 	var orders []Order
 	var totalRecords int64
 
@@ -25,7 +25,9 @@ func (r *OrderRepository) FindAll(c context.Context, paginationReq *shared.Pagin
 
 	baseQuery := r.DB.WithContext(c).Model(&Order{}).Preload("User")
 
-	err := baseQuery.Count(&totalRecords).Error
+	query := FilterOrderQuery(filter, baseQuery)
+
+	err := query.Session(&gorm.Session{}).Count(&totalRecords).Error
 
 	if err != nil {
 		return nil, err
