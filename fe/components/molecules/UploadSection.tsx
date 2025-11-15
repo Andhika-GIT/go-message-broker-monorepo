@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { Upload } from "./Upload";
 import { Button } from "../ui/button";
+import { toast } from "sonner"
+import { Error } from "@/lib/types";
 
 type UploadSectionParam = {
   uploadFn : (file: File) => Promise<string | undefined>
@@ -23,9 +25,12 @@ export const UploadSection : React.FC<UploadSectionParam> = ({uploadFn}) => {
 
       try {
         await uploadFn(uploadedFile[0])
+        toast.success("Successfully upload file")
+
       }
       catch(e) {
-        console.log(e)
+        const error = e as Error
+        toast.error(error.message)
       }
       finally{
         setIsLoading(false)
