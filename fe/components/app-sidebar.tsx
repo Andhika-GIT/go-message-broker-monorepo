@@ -3,7 +3,7 @@
 import * as React from "react"
 import {
   IconCamera, IconDashboard, IconFileAi,
-  IconFileDescription, IconInnerShadowTop, IconUsers
+  IconFileDescription, IconInnerShadowTop, IconUsers, IconClipboardList
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -33,10 +33,15 @@ const data = {
       url: "/dashboard",
       icon: IconDashboard,
     },
-      {
+    {
       title: "User",
       url: "/user",
       icon: IconUsers,
+    },
+    {
+      title: "Order",
+      url: "/order",
+      icon: IconClipboardList,
     },
   ],
   navClouds: [

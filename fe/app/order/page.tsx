@@ -1,15 +1,14 @@
 import { DataTable } from "@/components/data-table";
 
-import user from "./user.json";
 import { columns } from "./column";
 import { UploadSection } from "@/components/molecules";
-import { getAllUsers, UploadUserExcel } from "../action/user";
+import { getAllOrders, UploadOrderExcel } from "../action/order";
 
 export default async function Page() {
   return (
     <>
-      <UploadSection uploadFn={UploadUserExcel} />
-      <DataTable columns={columns} fetchFunction={getAllUsers}/>
+      <UploadSection uploadFn={UploadOrderExcel} />
+      <DataTable columns={columns} fetchFunction={getAllOrders}/>
     </>
   );
 }

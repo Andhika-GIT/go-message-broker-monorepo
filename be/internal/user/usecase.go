@@ -1,25 +1,63 @@
 package user
 
 import (
+	"context"
+	"fmt"
 	"log"
-	"mime/multipart"
+	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/xuri/excelize/v2"
+	"gorm.io/gorm"
 )
 
 type UserUseCase struct {
-	rmq *shared.RabbitMqProducer
+	Repository *UserRepository
+	rmq        *shared.RabbitMqProducer
+	DB         *gorm.DB
 }
 
-func NewUserUseCase(rmq *shared.RabbitMqProducer) *UserUseCase {
+func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, DB *gorm.DB) *UserUseCase {
 	return &UserUseCase{
-		rmq: rmq,
+		Repository: Repository,
+		rmq:        rmq,
+		DB:         DB,
 	}
 }
 
-func (u *UserUseCase) ReadFile(file multipart.File) error {
-	var users []UserImport
+func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.PaginationRequest, filter *UserFilter) (*shared.Paginated[UserResponse], error) {
+
+	paginated, err := u.Repository.FindAll(c, paginationReq, filter)
+
+	if err != nil {
+		return nil, shared.WriteError(500, fmt.Sprintf("failed to find all users %s", err.Error()))
+	}
+
+	formatedUsers := ConvertToUsersResponse(paginated.Data)
+
+	// return new paginated response with different type (UserResponse)
+	return &shared.Paginated[UserResponse]{
+		Data:       formatedUsers,
+		Total:      paginated.Total,
+		TotalPages: paginated.TotalPages,
+	}, nil
+
+}
+
+func (u *UserUseCase) ReadFile(r *http.Request) error {
+	file, header, err := r.FormFile("file")
+
+	if err != nil {
+		return shared.WriteError(500, fmt.Sprintf("failed to read file %s", err.Error()))
+	}
+
+	defer file.Close()
+
+	isFileExtensionCorrect := shared.IsAllowedExtension(header.Filename)
+
+	if !isFileExtensionCorrect {
+		return shared.WriteError(400, "invalid file extension")
+	}
 
 	excel, err := excelize.OpenReader(file)
 
@@ -36,6 +74,8 @@ func (u *UserUseCase) ReadFile(file multipart.File) error {
 	if err != nil {
 		return shared.WriteError(500, "error when getting sheets")
 	}
+
+	var users []UserImport
 
 	for i, row := range rows {
 		if i == 0 {

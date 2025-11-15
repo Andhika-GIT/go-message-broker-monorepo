@@ -2,25 +2,6 @@
 
 import * as React from "react";
 import {
-  closestCenter,
-  DndContext,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-  type UniqueIdentifier,
-} from "@dnd-kit/core";
-import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
-import {
-  arrayMove,
-  SortableContext,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import {
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
@@ -30,21 +11,11 @@ import {
   IconPlus,
 } from "@tabler/icons-react";
 import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedRowModel,
-  getFacetedUniqueValues,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  Row,
-  SortingState,
-  useReactTable,
-  VisibilityState,
+  ColumnDef, flexRender,
+  getCoreRowModel, getPaginationRowModel,
+  getSortedRowModel, SortingState,
+  useReactTable
 } from "@tanstack/react-table";
-import { z, ZodAny } from "zod";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -70,98 +41,96 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
+import { Error, Paginate } from "@/lib/types";
 
-function DraggableRow<T extends ZodAny>({ row }: { row: Row<z.infer<T>> }) {
-  const { transform, transition, setNodeRef, isDragging } = useSortable({
-    id: row.original.id,
-  });
+import { useDebounce } from 'use-debounce';
+import { Input } from "./ui/input";
 
-  return (
-    <TableRow
-      data-state={row.getIsSelected() && "selected"}
-      data-dragging={isDragging}
-      ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition: transition,
-      }}
-    >
-      {row.getVisibleCells().map((cell) => (
-        <TableCell key={cell.id}>
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </TableCell>
-      ))}
-    </TableRow>
-  );
+interface DataTableProps<TData extends { id: string | number }> {
+  columns: ColumnDef<TData>[];
+  fetchFunction: (
+    page: number,
+    pageSize: number,
+    search?: null | string
+  ) => Promise<Paginate<TData[]> | undefined>;
 }
 
-export function DataTable<T extends ZodAny>({
+export function DataTable<TData extends { id: string | number }>({
   columns,
-  data: initialData,
-}: {
-  columns: ColumnDef<z.infer<T>>[];
-  data: z.infer<T>[];
-}) {
-  const [data, setData] = React.useState(() => initialData);
+  fetchFunction,
+}: DataTableProps<TData>) {
+  const [search, setSearch] = React.useState<string>('')
+  const [searchValue] = useDebounce(search, 1000)
+  const [data, setData] = React.useState<TData[]>([]);
+  const [totalItems, setTotalItems] = React.useState<number>(0);
+  const [loading, setLoading] = React.useState<boolean>(false);
   const [rowSelection, setRowSelection] = React.useState({});
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState({
     pageIndex: 0,
     pageSize: 10,
   });
-  const sortableId = React.useId();
-  const sensors = useSensors(
-    useSensor(MouseSensor, {}),
-    useSensor(TouchSensor, {}),
-    useSensor(KeyboardSensor, {})
-  );
-
-  const dataIds = React.useMemo<UniqueIdentifier[]>(
-    () => data?.map(({ id }) => id) || [],
-    [data]
-  );
 
   const table = useReactTable({
     data,
     columns,
     state: {
       sorting,
-      columnVisibility,
       rowSelection,
-      columnFilters,
       pagination,
     },
     getRowId: (row) => row.id.toString(),
     enableRowSelection: true,
+
+    // main event config
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
     onPaginationChange: setPagination,
+
+    // main model
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedUniqueValues: getFacetedUniqueValues(),
+
+    // pagination configuration
+    manualPagination: true,
+    pageCount: Math.ceil(totalItems / pagination.pageSize),
   });
 
-  function handleDragEnd(event: DragEndEvent) {
-    const { active, over } = event;
-    if (active && over && active.id !== over.id) {
-      setData((data) => {
-        const oldIndex = dataIds.indexOf(active.id);
-        const newIndex = dataIds.indexOf(over.id);
-        return arrayMove(data, oldIndex, newIndex);
-      });
+  // fetch data control
+  const fetchDataTable = async (page: number, pageSize: number, search?: null | string) => {
+    setLoading(true);
+    try {
+      const response = await fetchFunction(page, pageSize, search);
+      if (response) {
+        setData(response.data);
+        setTotalItems(response.total);
+      } else {
+        setData([]);
+        setTotalItems(0);
+      }
+    } catch (e) {
+      const responseError = e as Error;
+      console.log(responseError);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  React.useEffect(() => {
+    fetchDataTable(pagination.pageIndex + 1, pagination.pageSize, searchValue);
+  }, [pagination.pageIndex, pagination.pageSize]);
+
+  React.useEffect(() => {
+    console.log(searchValue)
+
+    setPagination(prev => ({
+      ...prev,
+      pageIndex: 0
+    }));
+
+    fetchDataTable(0, pagination.pageSize, searchValue)
+  }, [searchValue])
 
   return (
     <Tabs
@@ -207,10 +176,7 @@ export function DataTable<T extends ZodAny>({
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          <Button variant="outline" size="sm">
-            <IconPlus />
-            <span className="hidden lg:inline">Add Section</span>
-          </Button>
+          <Input type="email" placeholder="search by name or email..." onChange={(e) => setSearch(e.target.value)} />
         </div>
         <div className="flex items-center gap-2">
           <label
@@ -228,55 +194,64 @@ export function DataTable<T extends ZodAny>({
         className="relative flex flex-col gap-4 overflow-auto px-4 lg:px-6"
       >
         <div className="overflow-hidden rounded-lg border">
-          <DndContext
-            collisionDetection={closestCenter}
-            modifiers={[restrictToVerticalAxis]}
-            onDragEnd={handleDragEnd}
-            sensors={sensors}
-            id={sortableId}
-          >
-            <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      );
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody className="**:data-[slot=table-cell]:first:w-8">
-                {table.getRowModel().rows?.length ? (
-                  <SortableContext
-                    items={dataIds}
-                    strategy={verticalListSortingStrategy}
-                  >
-                    {table.getRowModel().rows.map((row) => (
-                      <DraggableRow key={row.id} row={row} />
+          <Table>
+            <TableHeader className="bg-muted sticky top-0 z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id} colSpan={header.colSpan}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                // Loading Skeleton
+                Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    {columns.map((column, colIndex) => (
+                      <TableCell key={colIndex}>
+                        <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                      </TableCell>
                     ))}
-                  </SortableContext>
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </DndContext>
+                ))
+              ) : table.getRowModel().rows?.length ? (
+                // Actual Data
+                table.getRowModel().rows.map((row) => (
+                  <TableRow key={row.id}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                // No Data
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">

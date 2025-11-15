@@ -13,6 +13,7 @@ func InitApp() *chi.Mux {
 	r := NewRouter()
 
 	v := NewViper()
+	db := NewDatabase(v)
 	rmq, err := shared.NewRabbitMqProducer(v)
 
 	if err != nil {
@@ -26,8 +27,8 @@ func InitApp() *chi.Mux {
 
 	}
 
-	order.NewOrderModule(r, rmq)
-	user.NewUserModule(r, rmq)
+	order.NewOrderModule(r, rmq, db)
+	user.NewUserModule(r, rmq, db)
 
 	return r
 }

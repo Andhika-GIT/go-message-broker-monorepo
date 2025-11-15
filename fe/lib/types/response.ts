@@ -1,3 +1,10 @@
+export type Paginate<T> = {
+  data: T;
+  total: number;
+  total_pages: number;
+
+}
+
 export type Error = {
   success: false;
   code: number;
@@ -10,5 +17,6 @@ export type Success<T> = {
   message: string;
   data?: T;
 };
+
 
 export type ApiResponse<T = []> = Error | Success<T>;

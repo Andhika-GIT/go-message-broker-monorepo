@@ -1,6 +1,6 @@
 'use client'
 
-import { User, UserSchema } from "@/lib/schemas"
+import { Order } from "@/lib/schemas"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ColumnDef } from "@tanstack/react-table"
 import {
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button"
 import { IconDotsVertical } from "@tabler/icons-react"
 import z from "zod"
 
-export const columns: ColumnDef<User>[] = [
+export const columns: ColumnDef<Order>[] = [
 
   {
     id: "select",
@@ -42,13 +42,6 @@ export const columns: ColumnDef<User>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "name",
-    header: "Name",
-    cell: ({ row }) => {
-        return row.original.name
-    },
-  },
-  {
     accessorKey: "email",
     header: "Email",
     cell: ({ row }) => {
@@ -56,10 +49,17 @@ export const columns: ColumnDef<User>[] = [
     },
   },
   {
-    accessorKey: "phone_number",
-    header: "Phone Number",
+    accessorKey: "product_name",
+    header: "Product Name",
     cell: ({ row }) => {
-        return row.original.phone_number
+        return row.original.product_name
+    },
+  },
+  {
+    accessorKey: "quantity",
+    header: "Quantity",
+    cell: ({ row }) => {
+        return row.original.quantity
     },
   },
   

@@ -7,15 +7,29 @@ import (
 )
 
 type OrderHandler struct {
-	rmq     *shared.RabbitMqProducer
 	usecase *OrderUseCase
 }
 
-func NewOrderHandler(rmq *shared.RabbitMqProducer, usecase *OrderUseCase) *OrderHandler {
+func NewOrderHandler(usecase *OrderUseCase) *OrderHandler {
 	return &OrderHandler{
-		rmq:     rmq,
 		usecase: usecase,
 	}
+}
+
+func (h *OrderHandler) GetAllOrders(w http.ResponseWriter, r *http.Request) {
+	paginationReq := shared.GetPaginationParams(r)
+
+	orderFilter := BindOrderFilterFromRequest(r)
+
+	orders, err := h.usecase.FindAllOrders(r.Context(), paginationReq, orderFilter)
+
+	if err != nil {
+		shared.SendJsonErrorResponse(w, err, nil)
+		return
+	}
+
+	shared.SendJsonResponse(w, 200, "success", orders)
+
 }
 
 func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
