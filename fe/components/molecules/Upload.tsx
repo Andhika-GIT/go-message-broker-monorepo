@@ -6,6 +6,7 @@ import {
   DropzoneEmptyState,
 } from "@/components/ui/shadcn-io/dropzone";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type UploadProps = {
   onFilesChange: (file: File[]) => void;
@@ -20,9 +21,8 @@ export const Upload: React.FC<UploadProps> = ({ onFilesChange }) => {
   return (
     <Dropzone
       maxSize={1024 * 1024 * 10}
-      minSize={1024}
       onDrop={handleDrop}
-      onError={console.error}
+      onError={(e) => {toast.error(e.message)}}
       src={files}
     >
       <DropzoneEmptyState />
