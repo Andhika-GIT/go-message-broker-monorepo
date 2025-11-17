@@ -28,7 +28,7 @@ func InitApp() *chi.Mux {
 
 	}
 
-	userModule := user.NewUserModule(rmq, DB)
+	userModule := user.NewUserModule(rmq, DB, &cfg.RabbitMQQueue)
 	order.NewOrderModule(rmq, DB, userModule.UserUseCase, &cfg.RabbitMQQueue)
 
 	return r

@@ -9,14 +9,16 @@ import (
 )
 
 type UserDirectUploadWorker struct {
-	Rmq     *shared.RabbitMqConsumer
-	UseCase *UserUseCase
+	Rmq      *shared.RabbitMqConsumer
+	UseCase  *UserUseCase
+	QueueCfg *shared.RabbitMQQueue
 }
 
-func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase) *UserDirectUploadWorker {
+func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase, cfg *shared.RabbitMQQueue) *UserDirectUploadWorker {
 	return &UserDirectUploadWorker{
-		Rmq:     Rmq,
-		UseCase: UseCase,
+		Rmq:      Rmq,
+		UseCase:  UseCase,
+		QueueCfg: cfg,
 	}
 }
 
@@ -26,7 +28,7 @@ func (w *UserDirectUploadWorker) Start() {
 	ch := make(chan UserImport)
 	c := context.Background()
 
-	msgs, err := w.Rmq.Consume(shared.QueueUserDirectImport)
+	msgs, err := w.Rmq.Consume(w.QueueCfg.UserDirectImport)
 
 	if err != nil {
 		log.Println(err)
