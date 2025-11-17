@@ -35,6 +35,12 @@ type RabbitMQConfig struct {
 	Queue      RabbitMQQueue
 }
 
+type RedisClientConfig struct {
+	Addr     string
+	Password string
+	DB       int
+}
+
 type Config struct {
 	// RabbitMQ
 	RabbitMQConnectURL string
@@ -46,48 +52,68 @@ type Config struct {
 
 	// Database
 	Database DatabaseConfig
+
+	// redis client
+	RedisClient RedisClientConfig
 }
 
 func InitConfig(v *viper.Viper) *Config {
 	cfg := &Config{}
 
-	// RabbitMQ
-	cfg.RabbitMQConnectURL = getOrDefault(v, "RABBITMQ_CONNECT_URL", "amqp://guest:guest@localhost:5672/")
-	cfg.RabbitMQExchange = getOrDefault(v, "MQ_EXCHANGE_GO_APP", "go-app-exchange")
+	// --- RabbitMQ connection ---
+	cfg.RabbitMQConnectURL = getOrDefaultString(v, "RABBITMQ_CONNECTION_URL", "amqp://guest:guest@localhost:5672/")
+	cfg.RabbitMQExchange = getOrDefaultString(v, "MQ_EXCHANGE_GO_APP", "go-app-exchange")
 
-	// Routing Keys
-	cfg.RabbitMQRoutingKey.UserDirectImport = getOrDefault(v, "MQ_RK_USER_DIRECT_IMPORT", "user.import.direct")
-	cfg.RabbitMQRoutingKey.UserSftpImport = getOrDefault(v, "MQ_RK_USER_SFTP_IMPORT", "user.import.sftp")
-	cfg.RabbitMQRoutingKey.UserExport = getOrDefault(v, "MQ_RK_USER_EXPORT", "user.export")
-	cfg.RabbitMQRoutingKey.OrderDirectImport = getOrDefault(v, "MQ_RK_ORDER_DIRECT_IMPORT", "order.import.direct")
-	cfg.RabbitMQRoutingKey.OrderImport = getOrDefault(v, "MQ_RK_ORDER_IMPORT", "order.import")
-	cfg.RabbitMQRoutingKey.OrderExport = getOrDefault(v, "MQ_RK_ORDER_EXPORT", "order.export")
-
-	// Queues
-	cfg.RabbitMQQueue.UserDirectImport = getOrDefault(v, "MQ_Q_USER_DIRECT_IMPORT", "user.import.direct.q")
-	cfg.RabbitMQQueue.UserSftpImport = getOrDefault(v, "MQ_Q_USER_SFTP_IMPORT", "user.import.sftp.q")
-	cfg.RabbitMQQueue.UserExport = getOrDefault(v, "MQ_Q_USER_EXPORT", "user.export.q")
-	cfg.RabbitMQQueue.OrderDirectImport = getOrDefault(v, "MQ_Q_ORDER_DIRECT_IMPORT", "order.import.direct.q")
-	cfg.RabbitMQQueue.OrderImport = getOrDefault(v, "MQ_Q_ORDER_IMPORT", "order.import.q")
-	cfg.RabbitMQQueue.OrderExport = getOrDefault(v, "MQ_Q_ORDER_EXPORT", "order.export.q")
-
-	// Database
-	cfg.Database.Host = getOrDefault(v, "DB_HOST", "127.0.0.1")
-	cfg.Database.Port = v.GetInt("DB_PORT")
-	if cfg.Database.Port == 0 {
-		cfg.Database.Port = 3306
+	// --- RabbitMQ Routing Keys ---
+	cfg.RabbitMQRoutingKey = RabbitMQRoutingKey{
+		UserDirectImport:  getOrDefaultString(v, "MQ_RK_USER_DIRECT_IMPORT", "user.import.direct"),
+		UserSftpImport:    getOrDefaultString(v, "MQ_RK_USER_SFTP_IMPORT", "user.import.sftp"),
+		UserExport:        getOrDefaultString(v, "MQ_RK_USER_EXPORT", "user.export"),
+		OrderDirectImport: getOrDefaultString(v, "MQ_RK_ORDER_DIRECT_IMPORT", "order.import.direct"),
+		OrderImport:       getOrDefaultString(v, "MQ_RK_ORDER_IMPORT", "order.import"),
+		OrderExport:       getOrDefaultString(v, "MQ_RK_ORDER_EXPORT", "order.export"),
 	}
-	cfg.Database.User = getOrDefault(v, "DB_USERNAME", "root")
-	cfg.Database.Password = getOrDefault(v, "DB_PASSWORD", "")
-	cfg.Database.Name = getOrDefault(v, "DB_NAME", "mydb")
+
+	// --- RabbitMQ Queues ---
+	cfg.RabbitMQQueue = RabbitMQQueue{
+		UserDirectImport:  getOrDefaultString(v, "MQ_Q_USER_DIRECT_IMPORT", "user.import.direct.q"),
+		UserSftpImport:    getOrDefaultString(v, "MQ_Q_USER_SFTP_IMPORT", "user.import.sftp.q"),
+		UserExport:        getOrDefaultString(v, "MQ_Q_USER_EXPORT", "user.export.q"),
+		OrderDirectImport: getOrDefaultString(v, "MQ_Q_ORDER_DIRECT_IMPORT", "order.import.direct.q"),
+		OrderImport:       getOrDefaultString(v, "MQ_Q_ORDER_IMPORT", "order.import.q"),
+		OrderExport:       getOrDefaultString(v, "MQ_Q_ORDER_EXPORT", "order.export.q"),
+	}
+
+	// --- Database ---
+	cfg.Database = DatabaseConfig{
+		Host:     getOrDefaultString(v, "DB_HOST", "localhost"),
+		Port:     getOrDefaultInt(v, "DB_PORT", 5432),
+		User:     getOrDefaultString(v, "DB_USERNAME", "postgres"),
+		Password: getOrDefaultString(v, "DB_PASSWORD", "postgres"),
+		Name:     getOrDefaultString(v, "DB_NAME", "postgres"),
+	}
+
+	// --- Redis Client ---
+	cfg.RedisClient = RedisClientConfig{
+		Addr:     getOrDefaultString(v, "REDIS_ADDR", "localhost:6379"),
+		Password: getOrDefaultString(v, "REDIS_PASSWORD", ""),
+		DB:       getOrDefaultInt(v, "REDIS_DB", 0),
+	}
 
 	return cfg
 }
 
-// helper
-func getOrDefault(v *viper.Viper, key string, def string) string {
+func getOrDefaultString(v *viper.Viper, key, def string) string {
 	val := v.GetString(key)
 	if val == "" {
+		return def
+	}
+	return val
+}
+
+func getOrDefaultInt(v *viper.Viper, key string, def int) int {
+	val := v.GetInt(key)
+	if val == 0 {
 		return def
 	}
 	return val
