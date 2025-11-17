@@ -13,14 +13,15 @@ func InitApp() *chi.Mux {
 	r := chi.NewRouter()
 
 	v := NewViper()
-	rmq, err := shared.NewRabbitMqConsumer(v)
-	DB := NewDatabase(v)
+	cfg := shared.InitConfig(v)
+	rmq, err := shared.NewRabbitMqConsumer(cfg.RabbitMQConnectURL)
+	DB := NewDatabase(&cfg.Database)
 
 	if err != nil {
 		log.Fatalf("failed to initialize RabbitMQ connection: %v", err)
 	}
 
-	err = InitQueue(rmq)
+	err = InitQueue(rmq, cfg)
 
 	if err != nil {
 		log.Fatalf("failed to bind RabbitMQ queues: %v", err)
@@ -28,7 +29,7 @@ func InitApp() *chi.Mux {
 	}
 
 	userModule := user.NewUserModule(rmq, DB)
-	order.NewOrderModule(rmq, DB, userModule.UserUseCase)
+	order.NewOrderModule(rmq, DB, userModule.UserUseCase, &cfg.RabbitMQQueue)
 
 	return r
 }

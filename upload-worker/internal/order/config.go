@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewOrderModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB, userUseCase *user.UserUseCase) {
+func NewOrderModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB, userUseCase *user.UserUseCase, queueCfg *shared.RabbitMQQueue) {
 	orderUseCase := NewOrderUseCase(&OrderRepository{}, DB, userUseCase)
 
-	directUC := NewOrderDirectWorker(rmq, orderUseCase)
+	directUC := NewOrderDirectWorker(rmq, orderUseCase, queueCfg)
 
 	go directUC.Start()
 
