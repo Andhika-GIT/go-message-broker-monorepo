@@ -1,4 +1,4 @@
-package redis
+package redispubsub
 
 import (
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
