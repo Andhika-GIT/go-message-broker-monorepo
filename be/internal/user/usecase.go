@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/pkg/sftp"
 	"github.com/xuri/excelize/v2"
 	"gorm.io/gorm"
 )
@@ -15,17 +16,21 @@ type UserUseCase struct {
 	Repository *UserRepository
 	rmq        *shared.RabbitMqProducer
 	DB         *gorm.DB
+	sftp       *sftp.Client
 }
 
-func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, DB *gorm.DB) *UserUseCase {
+func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, sftp *sftp.Client, DB *gorm.DB) *UserUseCase {
 	return &UserUseCase{
 		Repository: Repository,
 		rmq:        rmq,
 		DB:         DB,
+		sftp:       sftp,
 	}
 }
 
 func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.PaginationRequest, filter *UserFilter) (*shared.Paginated[UserResponse], error) {
+
+	defer u.sftp.Close()
 
 	paginated, err := u.Repository.FindAll(c, paginationReq, filter)
 
@@ -34,6 +39,16 @@ func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.Pagi
 	}
 
 	formatedUsers := ConvertToUsersResponse(paginated.Data)
+
+	// sftp test
+	files, err := u.sftp.ReadDir("/upload")
+	if err != nil {
+		log.Println("failed to read sftp dir:", err)
+	} else {
+		for _, f := range files {
+			log.Println(f.Name())
+		}
+	}
 
 	// return new paginated response with different type (UserResponse)
 	return &shared.Paginated[UserResponse]{
