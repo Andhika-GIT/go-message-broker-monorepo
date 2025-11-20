@@ -74,6 +74,15 @@ services:
       - /app/node_modules
     container_name: websocket-dev
 
+  sftp:
+    image: atmoz/sftp
+    volumes:
+        - sftp-data:/upload:/home/foo/upload
+    ports:
+        - "2222:22"
+    command: foo:pass:1001
+
 volumes:
   pgdata-dev:
   redis-data:
+  sftp-data:
