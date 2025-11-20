@@ -28,8 +28,14 @@ func InitApp() *chi.Mux {
 
 	}
 
+	sftpClient, err := NewSFTPClient(&cfg.SftpClient)
+
+	if err != nil {
+		log.Fatalf("failed to bind to sftp client %v", err)
+	}
+
 	order.NewOrderModule(r, rmq, db)
-	user.NewUserModule(r, rmq, db)
+	user.NewUserModule(r, rmq, sftpClient, db)
 
 	return r
 }
