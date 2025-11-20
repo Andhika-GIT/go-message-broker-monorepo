@@ -51,5 +51,29 @@ services:
       - ./fe:/app  
       - /app/node_modules
     container_name: gmbm-fe-c-dev
+
+  redis-pubsub:
+    image: redis:alpine
+    container_name: redis-pubsub-dev
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+
+  websocket:
+    build:
+      context: ./websocket
+      dockerfile: dockerfile.dev
+    ports:
+      - "9080:8080"
+    env_file:
+      - ./websocket/.env
+    volumes:
+      - ./websocket:/app
+      - /app/node_modules
+    container_name: websocket-dev
+
 volumes:
   pgdata-dev:
+  redis-data:

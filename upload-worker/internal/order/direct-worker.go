@@ -9,14 +9,16 @@ import (
 )
 
 type OrderDirectWorker struct {
-	Rmq     *shared.RabbitMqConsumer
-	UseCase *OrderUseCase
+	Rmq      *shared.RabbitMqConsumer
+	UseCase  *OrderUseCase
+	QueueCfg *shared.RabbitMQQueue
 }
 
-func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase) *OrderDirectWorker {
+func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase, cfg *shared.RabbitMQQueue) *OrderDirectWorker {
 	return &OrderDirectWorker{
-		Rmq:     Rmq,
-		UseCase: UseCase,
+		Rmq:      Rmq,
+		UseCase:  UseCase,
+		QueueCfg: cfg,
 	}
 }
 
@@ -26,7 +28,7 @@ func (w *OrderDirectWorker) Start() {
 	ch := make(chan OrderImport)
 	c := context.Background()
 
-	msgs, err := w.Rmq.Consume(shared.QueueOrderDirectImport)
+	msgs, err := w.Rmq.Consume(w.QueueCfg.OrderDirectImport)
 
 	if err != nil {
 		log.Println(err.Error())

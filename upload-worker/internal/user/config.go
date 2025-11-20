@@ -9,10 +9,10 @@ type UserModule struct {
 	UserUseCase *UserUseCase
 }
 
-func NewUserModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB) *UserModule {
+func NewUserModule(rmq *shared.RabbitMqConsumer, DB *gorm.DB, queueCfg *shared.RabbitMQQueue) *UserModule {
 	userUseCase := NewUserUseCase(&UserRepository{}, DB)
 
-	directUC := NewUserDirectUploadWorker(rmq, userUseCase)
+	directUC := NewUserDirectUploadWorker(rmq, userUseCase, queueCfg)
 
 	go directUC.Start()
 
