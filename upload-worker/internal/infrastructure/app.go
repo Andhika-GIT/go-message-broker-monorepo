@@ -5,7 +5,6 @@ import (
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/order"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
-	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared/redispubsub"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/user"
 	"github.com/go-chi/chi/v5"
 )
@@ -17,7 +16,6 @@ func InitApp() *chi.Mux {
 	cfg := shared.InitConfig(v)
 	rmq, err := shared.NewRabbitMqConsumer(cfg.RabbitMQConnectURL)
 	DB := NewDatabase(&cfg.Database)
-	redis := redispubsub.NewRedisClient(&cfg.RedisClient)
 
 	if err != nil {
 		log.Fatalf("failed to initialize RabbitMQ connection: %v", err)
@@ -30,7 +28,7 @@ func InitApp() *chi.Mux {
 
 	}
 
-	userModule := user.NewUserModule(rmq, DB, &cfg.RabbitMQQueue, redis)
+	userModule := user.NewUserModule(rmq, DB, &cfg.RabbitMQQueue)
 	order.NewOrderModule(rmq, DB, userModule.UserUseCase, &cfg.RabbitMQQueue)
 
 	return r
