@@ -6,25 +6,23 @@ import (
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 )
 
-func InitQueue(rmq *shared.RabbitMqProducer) error {
+func InitQueue(rmq *shared.RabbitMqProducer, cfg *shared.Config) error {
 	log.Println("Initializing RabbitMQ...")
 
 	// Declare exchange
-	if err := rmq.DeclareExchange(shared.ExchangeGoApp, "direct"); err != nil {
+	if err := rmq.DeclareExchange(cfg.RabbitMQExchange, "direct"); err != nil {
 		return err
 	}
 
 	// --- User Queues ---
-	if err := rmq.QueueBind(shared.QueueUserDirectImport, shared.ExchangeGoApp, shared.RoutingKeyUserDirectImport); err != nil {
+	if err := rmq.QueueBind(cfg.RabbitMQQueue.UserDirectImport, cfg.RabbitMQExchange, cfg.RabbitMQRoutingKey.UserDirectImport); err != nil {
 		return err
 	}
-
-	if err := rmq.QueueBind(shared.QueueUserSftpImport, shared.ExchangeGoApp, shared.RoutingKeyUserSftpImport); err != nil {
+	if err := rmq.QueueBind(cfg.RabbitMQQueue.UserSftpImport, cfg.RabbitMQExchange, cfg.RabbitMQRoutingKey.UserSftpImport); err != nil {
 		return err
 	}
-
 	// --- Order Queues ---
-	if err := rmq.QueueBind(shared.QueueOrderDirectImport, shared.ExchangeGoApp, shared.RoutingKeyOrderDirectImport); err != nil {
+	if err := rmq.QueueBind(cfg.RabbitMQQueue.OrderDirectImport, cfg.RabbitMQExchange, cfg.RabbitMQRoutingKey.OrderDirectImport); err != nil {
 		return err
 	}
 

@@ -13,14 +13,15 @@ func InitApp() *chi.Mux {
 	r := NewRouter()
 
 	v := NewViper()
-	db := NewDatabase(v)
-	rmq, err := shared.NewRabbitMqProducer(v)
+	cfg := shared.InitConfig(v)
+	db := NewDatabase(&cfg.Database)
+	rmq, err := shared.NewRabbitMqProducer(cfg.RabbitMQConnectURL)
 
 	if err != nil {
 		log.Fatalf("failed to initialize RabbitMQ connection: %v", err)
 	}
 
-	err = InitQueue(rmq)
+	err = InitQueue(rmq, cfg)
 
 	if err != nil {
 		log.Fatalf("failed to bind RabbitMQ queues: %v", err)

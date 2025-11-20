@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/rabbitmq/amqp091-go"
-	"github.com/spf13/viper"
 )
 
 type RabbitMqProducer struct {
@@ -13,8 +12,8 @@ type RabbitMqProducer struct {
 	Channel *amqp091.Channel
 }
 
-func NewRabbitMqProducer(viper *viper.Viper) (*RabbitMqProducer, error) {
-	conn, err := amqp091.Dial(viper.GetString("RABBITMQ_CONNECTION_URL"))
+func NewRabbitMqProducer(connectionUrl string) (*RabbitMqProducer, error) {
+	conn, err := amqp091.Dial(connectionUrl)
 
 	if err != nil {
 		return nil, err
