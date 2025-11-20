@@ -1,13 +1,14 @@
-package shared
+package infrastructure
 
 import (
 	"fmt"
 
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 )
 
-func NewSFTPClient(cfg *SftpClientConfig) (*sftp.Client, error) {
+func NewSFTPClient(cfg *shared.SftpClientConfig) (*sftp.Client, error) {
 	sshConfig := &ssh.ClientConfig{
 		User: cfg.Username,
 		Auth: []ssh.AuthMethod{
