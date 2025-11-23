@@ -1,18 +1,22 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/worker"
 )
 
 type UserHandler struct {
-	usecase *UserUseCase
+	usecase      *UserUseCase
+	uploadWorker *worker.UploadWorker
 }
 
-func NewUserHandler(usecase *UserUseCase) *UserHandler {
+func NewUserHandler(usecase *UserUseCase, uploadWorker *worker.UploadWorker) *UserHandler {
 	return &UserHandler{
-		usecase: usecase,
+		usecase:      usecase,
+		uploadWorker: uploadWorker,
 	}
 }
 
@@ -40,6 +44,27 @@ func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 		shared.SendJsonErrorResponse(w, err, nil)
 		return
 	}
+
+	file, header, err := r.FormFile("file")
+
+	if err != nil {
+		shared.WriteError(500, fmt.Sprintf("failed to read file %s", err.Error()))
+		return
+	}
+
+	defer file.Close()
+
+	isFileExtensionCorrect := shared.IsAllowedExtension(header.Filename)
+
+	if !isFileExtensionCorrect {
+		shared.WriteError(400, "invalid file extension")
+		return
+	}
+
+	h.uploadWorker.Queue(worker.UploadTask{
+		File:     file,
+		FileName: header.Filename,
+	})
 
 	shared.SendJsonResponse(w, 200, "success", nil)
 }

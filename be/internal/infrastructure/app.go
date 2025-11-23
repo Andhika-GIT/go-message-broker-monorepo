@@ -6,6 +6,7 @@ import (
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/order"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/user"
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/worker"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -34,8 +35,11 @@ func InitApp() *chi.Mux {
 		log.Fatalf("failed to bind to sftp client %v", err)
 	}
 
+	uploadWorker := worker.NewUploadWorker(sftpClient, rmq, 3)
 	order.NewOrderModule(r, rmq, db)
-	user.NewUserModule(r, rmq, sftpClient, db)
+	user.NewUserModule(r, rmq, sftpClient, uploadWorker, db)
+
+	go uploadWorker.Start()
 
 	return r
 }
