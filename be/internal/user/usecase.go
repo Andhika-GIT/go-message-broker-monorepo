@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
-	"github.com/pkg/sftp"
 	"gorm.io/gorm"
 )
 
@@ -13,15 +12,13 @@ type UserUseCase struct {
 	Repository *UserRepository
 	rmq        *shared.RabbitMqProducer
 	DB         *gorm.DB
-	sftp       *sftp.Client
 }
 
-func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, sftp *sftp.Client, DB *gorm.DB) *UserUseCase {
+func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, DB *gorm.DB) *UserUseCase {
 	return &UserUseCase{
 		Repository: Repository,
 		rmq:        rmq,
 		DB:         DB,
-		sftp:       sftp,
 	}
 }
 

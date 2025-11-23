@@ -37,7 +37,7 @@ func InitApp() *chi.Mux {
 
 	uploadWorker := worker.NewUploadWorker(sftpClient, rmq, 3)
 	order.NewOrderModule(r, rmq, db)
-	user.NewUserModule(r, rmq, sftpClient, uploadWorker, db)
+	user.NewUserModule(r, rmq, uploadWorker, db)
 
 	go uploadWorker.Start()
 
