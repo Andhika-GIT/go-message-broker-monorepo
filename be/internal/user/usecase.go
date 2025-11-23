@@ -30,8 +30,6 @@ func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, sf
 
 func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.PaginationRequest, filter *UserFilter) (*shared.Paginated[UserResponse], error) {
 
-	defer u.sftp.Close()
-
 	paginated, err := u.Repository.FindAll(c, paginationReq, filter)
 
 	if err != nil {
@@ -39,16 +37,6 @@ func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.Pagi
 	}
 
 	formatedUsers := ConvertToUsersResponse(paginated.Data)
-
-	// sftp test
-	files, err := u.sftp.ReadDir("/upload")
-	if err != nil {
-		log.Println("failed to read sftp dir:", err)
-	} else {
-		for _, f := range files {
-			log.Println(f.Name())
-		}
-	}
 
 	// return new paginated response with different type (UserResponse)
 	return &shared.Paginated[UserResponse]{
