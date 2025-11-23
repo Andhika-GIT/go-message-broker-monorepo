@@ -38,13 +38,6 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
-	err := h.usecase.ReadFile(r)
-
-	if err != nil {
-		shared.SendJsonErrorResponse(w, err, nil)
-		return
-	}
-
 	file, header, err := r.FormFile("file")
 
 	if err != nil {
