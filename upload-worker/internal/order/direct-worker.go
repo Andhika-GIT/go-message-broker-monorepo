@@ -5,19 +5,22 @@ import (
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/pkg/sftp"
 )
 
 type OrderDirectWorker struct {
-	Rmq      *shared.RabbitMqConsumer
-	UseCase  *OrderUseCase
-	QueueCfg *shared.RabbitMQQueue
+	Rmq        *shared.RabbitMqConsumer
+	UseCase    *OrderUseCase
+	QueueCfg   *shared.RabbitMQQueue
+	sftpClient *sftp.Client
 }
 
-func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase, cfg *shared.RabbitMQQueue) *OrderDirectWorker {
+func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *OrderDirectWorker {
 	return &OrderDirectWorker{
-		Rmq:      Rmq,
-		UseCase:  UseCase,
-		QueueCfg: cfg,
+		Rmq:        Rmq,
+		UseCase:    UseCase,
+		QueueCfg:   cfg,
+		sftpClient: sftpClient,
 	}
 }
 
@@ -38,6 +41,21 @@ func (w *OrderDirectWorker) Start() {
 			log.Panicln(err.Error())
 			continue
 		}
+
+		remoteFile, err := w.sftpClient.Open(uploadMsg.Filepath)
+
+		if err != nil {
+			log.Fatalf("error when reading sftp file: %v", err)
+			continue
+		}
+
+		rows, err := shared.ReadExcel(remoteFile)
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		log.Printf("rows are %v", rows)
 
 	}
 }
