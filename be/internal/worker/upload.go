@@ -11,7 +11,7 @@ import (
 
 type UploadTask struct {
 	File            io.Reader
-	FileName        string
+	Filename        string
 	QueueRoutingKey string
 }
 
@@ -42,7 +42,8 @@ func (w *UploadWorker) Start() {
 }
 
 func (w *UploadWorker) processUpload(task UploadTask) {
-	dstFile, err := w.sftpClient.Create(fmt.Sprintf("/upload/%s", task.FileName))
+
+	dstFile, err := w.sftpClient.Create(fmt.Sprintf("/upload/%s", task.Filename))
 
 	if err != nil {
 		log.Fatalf("error when connecting to sftp : %s", err.Error())
@@ -56,7 +57,12 @@ func (w *UploadWorker) processUpload(task UploadTask) {
 		log.Fatalf("error when insert file to sftp %s", err.Error())
 	}
 
-	w.rmq.Publish(task.QueueRoutingKey, task.FileName)
+	uploadMsg := shared.UploadMessage{
+		Filename: task.Filename,
+		Filepath: fmt.Sprintf("/upload/%s", task.Filename),
+	}
+
+	w.rmq.Publish(task.QueueRoutingKey, uploadMsg)
 
 }
 

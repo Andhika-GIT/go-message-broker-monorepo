@@ -59,7 +59,7 @@ func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 
 	h.uploadWorker.Queue(worker.UploadTask{
 		File:            file,
-		FileName:        header.Filename,
+		Filename:        header.Filename,
 		QueueRoutingKey: h.mqRoutingKey.OrderDirectImport,
 	})
 
