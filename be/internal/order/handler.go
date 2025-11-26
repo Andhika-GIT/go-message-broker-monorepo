@@ -58,8 +58,9 @@ func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.uploadWorker.Queue(worker.UploadTask{
-		File:     file,
-		FileName: header.Filename,
+		File:            file,
+		FileName:        header.Filename,
+		QueueRoutingKey: h.mqRoutingKey.OrderDirectImport,
 	})
 
 	shared.SendJsonResponse(w, 200, "success", nil)

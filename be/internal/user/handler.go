@@ -57,8 +57,9 @@ func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.uploadWorker.Queue(worker.UploadTask{
-		File:     file,
-		FileName: header.Filename,
+		File:            file,
+		FileName:        header.Filename,
+		QueueRoutingKey: h.mqRoutingKey.UserDirectImport,
 	})
 
 	shared.SendJsonResponse(w, 200, "success", nil)
