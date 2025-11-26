@@ -8,9 +8,9 @@ import (
 )
 
 func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker,
-	DB *gorm.DB) {
+	DB *gorm.DB, mqRoutingKey *shared.RabbitMQRoutingKey) {
 	repository := NewUserRepository(DB)
 	usecase := NewUserUseCase(repository, rmq, DB)
-	handler := NewUserHandler(usecase, uploadWorker)
+	handler := NewUserHandler(usecase, uploadWorker, mqRoutingKey)
 	NewUserRoutes(r, handler)
 }

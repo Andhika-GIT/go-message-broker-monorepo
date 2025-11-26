@@ -36,8 +36,8 @@ func InitApp() *chi.Mux {
 	}
 
 	uploadWorker := worker.NewUploadWorker(sftpClient, rmq, 3)
-	order.NewOrderModule(r, rmq, uploadWorker, db)
-	user.NewUserModule(r, rmq, uploadWorker, db)
+	order.NewOrderModule(r, rmq, uploadWorker, db, &cfg.RabbitMQRoutingKey)
+	user.NewUserModule(r, rmq, uploadWorker, db, &cfg.RabbitMQRoutingKey)
 
 	go uploadWorker.Start()
 

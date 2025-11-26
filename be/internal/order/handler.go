@@ -11,12 +11,14 @@ import (
 type OrderHandler struct {
 	usecase      *OrderUseCase
 	uploadWorker *worker.UploadWorker
+	mqRoutingKey *shared.RabbitMQRoutingKey
 }
 
-func NewOrderHandler(usecase *OrderUseCase, uploadWorker *worker.UploadWorker) *OrderHandler {
+func NewOrderHandler(usecase *OrderUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey) *OrderHandler {
 	return &OrderHandler{
 		usecase:      usecase,
 		uploadWorker: uploadWorker,
+		mqRoutingKey: mqRoutingKey,
 	}
 }
 

@@ -7,9 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewOrderModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker, DB *gorm.DB) {
+func NewOrderModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker, DB *gorm.DB, mqRoutingKey *shared.RabbitMQRoutingKey) {
 	repository := NewOrderRepository(DB)
 	usecase := NewOrderUseCase(repository, rmq)
-	handler := NewOrderHandler(usecase, uploadWorker)
+	handler := NewOrderHandler(usecase, uploadWorker, mqRoutingKey)
 	NewOrderRoutes(r, handler)
 }

@@ -10,8 +10,9 @@ import (
 )
 
 type UploadTask struct {
-	File     io.Reader
-	FileName string
+	File            io.Reader
+	FileName        string
+	QueueRoutingKey string
 }
 
 var UploadQueue = make(chan UploadTask, 100)
@@ -54,6 +55,8 @@ func (w *UploadWorker) processUpload(task UploadTask) {
 	if err != nil {
 		log.Fatalf("error when insert file to sftp %s", err.Error())
 	}
+
+	w.rmq.Publish(task.QueueRoutingKey, task.FileName)
 
 }
 

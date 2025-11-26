@@ -11,12 +11,14 @@ import (
 type UserHandler struct {
 	usecase      *UserUseCase
 	uploadWorker *worker.UploadWorker
+	mqRoutingKey *shared.RabbitMQRoutingKey
 }
 
-func NewUserHandler(usecase *UserUseCase, uploadWorker *worker.UploadWorker) *UserHandler {
+func NewUserHandler(usecase *UserUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey) *UserHandler {
 	return &UserHandler{
 		usecase:      usecase,
 		uploadWorker: uploadWorker,
+		mqRoutingKey: mqRoutingKey,
 	}
 }
 
