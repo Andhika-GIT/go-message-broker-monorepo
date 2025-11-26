@@ -14,8 +14,15 @@ func InitApp() *chi.Mux {
 
 	v := NewViper()
 	cfg := shared.InitConfig(v)
-	rmq, err := shared.NewRabbitMqConsumer(cfg.RabbitMQConnectURL)
 	DB := NewDatabase(&cfg.Database)
+
+	sftp, err := NewSFTPClient(&cfg.SftpClient)
+
+	if err != nil {
+		log.Fatalf("failed to initialize sftp: %v", err)
+	}
+
+	rmq, err := shared.NewRabbitMqConsumer(cfg.RabbitMQConnectURL)
 
 	if err != nil {
 		log.Fatalf("failed to initialize RabbitMQ connection: %v", err)
@@ -28,8 +35,8 @@ func InitApp() *chi.Mux {
 
 	}
 
-	userModule := user.NewUserModule(rmq, DB, &cfg.RabbitMQQueue)
-	order.NewOrderModule(rmq, DB, userModule.UserUseCase, &cfg.RabbitMQQueue)
+	userModule := user.NewUserModule(rmq, DB, &cfg.RabbitMQQueue, sftp)
+	order.NewOrderModule(rmq, DB, userModule.UserUseCase, &cfg.RabbitMQQueue, sftp)
 
 	return r
 }
