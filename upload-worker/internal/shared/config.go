@@ -41,6 +41,13 @@ type RedisClientConfig struct {
 	DB       int
 }
 
+type SftpClientConfig struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+}
+
 type Config struct {
 	// RabbitMQ
 	RabbitMQConnectURL string
@@ -55,6 +62,9 @@ type Config struct {
 
 	// redis client
 	RedisClient RedisClientConfig
+
+	// sftp/ssh
+	SftpClient SftpClientConfig
 }
 
 func InitConfig(v *viper.Viper) *Config {
@@ -98,6 +108,14 @@ func InitConfig(v *viper.Viper) *Config {
 		Addr:     getOrDefaultString(v, "REDIS_ADDR", "localhost:6379"),
 		Password: getOrDefaultString(v, "REDIS_PASSWORD", ""),
 		DB:       getOrDefaultInt(v, "REDIS_DB", 0),
+	}
+
+	// --- SFTP ---
+	cfg.SftpClient = SftpClientConfig{
+		Host:     getOrDefaultString(v, "SFTP_HOST", "localhost"),
+		Port:     getOrDefaultInt(v, "SFTP_PORT", 2222),
+		Username: getOrDefaultString(v, "SFTP_USERNAME", "foo"),
+		Password: getOrDefaultString(v, "SFTP_PASSWORD", "pass"),
 	}
 
 	return cfg
