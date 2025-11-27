@@ -8,8 +8,8 @@ import (
 
 type UserRepository struct{}
 
-func (r *UserRepository) Create(c context.Context, tx *gorm.DB, user *User) error {
-	err := tx.Create(&user).Error
+func (r *UserRepository) Create(c context.Context, tx *gorm.DB, users *[]User) error {
+	err := tx.Create(&users).Error
 
 	if err != nil {
 		return err

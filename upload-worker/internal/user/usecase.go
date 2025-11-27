@@ -13,6 +13,27 @@ type UserUseCase struct {
 	DB         *gorm.DB
 }
 
+func (uc *UserUseCase) ReadUsersExcel(rows [][]string) []UserImport {
+	var users []UserImport
+
+	for i, row := range rows {
+
+		if i == 0 {
+			continue
+		}
+
+		if len(row) >= 3 {
+			users = append(users, UserImport{
+				Name:        row[0],
+				Email:       row[1],
+				PhoneNumber: row[2],
+			})
+		}
+	}
+
+	return users
+}
+
 func NewUserUseCase(Repository *UserRepository, DB *gorm.DB) *UserUseCase {
 	return &UserUseCase{
 		Repository: Repository,
@@ -20,47 +41,45 @@ func NewUserUseCase(Repository *UserRepository, DB *gorm.DB) *UserUseCase {
 	}
 }
 
-func (uc *UserUseCase) CreateNewUsers(c context.Context, ch <-chan UserImport) error {
+func (uc *UserUseCase) CreateNewUsers(c context.Context, users []UserImport) error {
+	tx := uc.DB.WithContext(c).Begin()
 
-	for user := range ch {
-		tx := uc.DB.WithContext(c).Begin()
+	defer tx.Rollback()
+
+	var newUsers []User
+
+	for _, user := range users {
 
 		err := uc.Repository.FindByEmail(c, tx, &User{}, user.Email)
 
-		// if user email already exist, throw error
+		// if user email already exist, skip this user
 		if err == nil {
-			tx.Rollback()
 			log.Printf("user already exist")
 			continue
 		}
 
 		// other error besides not found from Repository.FindByEmail
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			tx.Rollback()
 			log.Printf("unexpected error: %v", err)
 			continue
 		}
 
-		err = uc.Repository.Create(c, tx, &User{
+		newUsers = append(newUsers, User{
 			Name:        user.Name,
 			Email:       user.Email,
 			PhoneNumber: user.PhoneNumber,
 		})
 
-		if err != nil {
-			tx.Rollback()
-			log.Printf("error : %s", err.Error())
-			continue
-		}
-
-		err = tx.Commit().Error
-
-		if err != nil {
-			log.Printf("error : %s", err.Error())
-		}
 	}
 
-	return nil
+	err := uc.Repository.Create(c, tx, &newUsers)
+
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
 
 func (uc *UserUseCase) FindUserByEmail(c context.Context, userEmail string) (UserResponse, error) {

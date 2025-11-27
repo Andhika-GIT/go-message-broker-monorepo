@@ -1,6 +1,7 @@
 package user
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -27,6 +28,8 @@ func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCas
 func (w *UserDirectUploadWorker) Start() {
 	defer w.Rmq.Close()
 
+	c := context.Background()
+
 	msgs, err := w.Rmq.Consume(w.QueueCfg.UserDirectImport)
 
 	if err != nil {
@@ -50,6 +53,14 @@ func (w *UserDirectUploadWorker) Start() {
 		}
 
 		rows, err := shared.ReadExcel(remoteFile)
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		newUsers := w.UseCase.ReadUsersExcel(rows)
+
+		err = w.UseCase.CreateNewUsers(c, newUsers)
 
 		if err != nil {
 			log.Fatal(err.Error())
