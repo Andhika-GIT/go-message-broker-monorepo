@@ -1,6 +1,7 @@
 package order
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 
@@ -27,6 +28,8 @@ func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase, c
 func (w *OrderDirectWorker) Start() {
 	defer w.Rmq.Close()
 
+	c := context.Background()
+
 	msgs, err := w.Rmq.Consume(w.QueueCfg.OrderDirectImport)
 
 	if err != nil {
@@ -50,6 +53,14 @@ func (w *OrderDirectWorker) Start() {
 		}
 
 		rows, err := shared.ReadExcel(remoteFile)
+
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+
+		orders := w.UseCase.ReadOrderExcel(rows)
+
+		err = w.UseCase.CreateOrders(c, orders)
 
 		if err != nil {
 			log.Fatal(err.Error())

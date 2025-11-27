@@ -8,7 +8,7 @@ import (
 
 type OrderRepository struct{}
 
-func (r *OrderRepository) Create(c context.Context, tx *gorm.DB, order *Order) error {
+func (r *OrderRepository) Create(c context.Context, tx *gorm.DB, order *[]Order) error {
 	err := tx.Create(&order).Error
 
 	if err != nil {
