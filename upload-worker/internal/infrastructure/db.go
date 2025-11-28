@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func NewDatabase(cfg *shared.DatabaseConfig) *gorm.DB {
+func NewDatabase(cfg *shared.DatabaseConfig) (*gorm.DB, error) {
 	DB_HOST := cfg.Host
 	DB_NAME := cfg.Name
 	DB_PORT := cfg.Port
@@ -19,9 +19,9 @@ func NewDatabase(cfg *shared.DatabaseConfig) *gorm.DB {
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
-		panic(fmt.Errorf("fatal error connecting to database: %w", err))
+		return nil, fmt.Errorf("fatal error connecting to database: %w", err)
 	}
 
-	return db
+	return db, nil
 
 }

@@ -12,9 +12,19 @@ import (
 func InitApp() *chi.Mux {
 	r := chi.NewRouter()
 
-	v := NewViper()
+	v, err := NewViper()
+
+	if err != nil {
+		log.Print(err.Error())
+	}
+
 	cfg := shared.InitConfig(v)
-	DB := NewDatabase(&cfg.Database)
+
+	DB, err := NewDatabase(&cfg.Database)
+
+	if err != nil {
+		log.Print(err.Error())
+	}
 
 	sftp, err := NewSFTPClient(&cfg.SftpClient)
 
