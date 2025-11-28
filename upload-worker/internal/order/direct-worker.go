@@ -48,14 +48,14 @@ func (w *OrderDirectWorker) Start() {
 		remoteFile, err := w.sftpClient.Open(uploadMsg.Filepath)
 
 		if err != nil {
-			log.Fatalf("error when reading sftp file: %v", err)
+			log.Printf("error when reading sftp file: %v", err)
 			continue
 		}
 
 		rows, err := shared.ReadExcel(remoteFile)
 
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Print(err.Error())
 		}
 
 		orders := w.UseCase.ReadOrderExcel(rows)
@@ -63,7 +63,7 @@ func (w *OrderDirectWorker) Start() {
 		err = w.UseCase.CreateOrders(c, orders)
 
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Print(err.Error())
 		}
 
 		log.Printf("rows are %v", rows)

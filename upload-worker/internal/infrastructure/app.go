@@ -19,19 +19,19 @@ func InitApp() *chi.Mux {
 	sftp, err := NewSFTPClient(&cfg.SftpClient)
 
 	if err != nil {
-		log.Fatalf("failed to initialize sftp: %v", err)
+		log.Printf("failed to initialize sftp: %v", err)
 	}
 
 	rmq, err := shared.NewRabbitMqConsumer(cfg.RabbitMQConnectURL)
 
 	if err != nil {
-		log.Fatalf("failed to initialize RabbitMQ connection: %v", err)
+		log.Printf("failed to initialize RabbitMQ connection: %v", err)
 	}
 
 	err = InitQueue(rmq, cfg)
 
 	if err != nil {
-		log.Fatalf("failed to bind RabbitMQ queues: %v", err)
+		log.Printf("failed to bind RabbitMQ queues: %v", err)
 
 	}
 

@@ -48,14 +48,14 @@ func (w *UserDirectUploadWorker) Start() {
 		remoteFile, err := w.sftpClient.Open(uploadMsg.Filepath)
 
 		if err != nil {
-			log.Fatalf("error when reading sftp file: %v", err)
+			log.Printf("error when reading sftp file: %v", err)
 			continue
 		}
 
 		rows, err := shared.ReadExcel(remoteFile)
 
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Print(err.Error())
 		}
 
 		newUsers := w.UseCase.ReadUsersExcel(rows)
@@ -63,7 +63,7 @@ func (w *UserDirectUploadWorker) Start() {
 		err = w.UseCase.CreateNewUsers(c, newUsers)
 
 		if err != nil {
-			log.Fatal(err.Error())
+			log.Print(err.Error())
 		}
 
 		log.Printf("filepath is %s", uploadMsg.Filepath)
