@@ -117,7 +117,7 @@ func InitConfig(v *viper.Viper) *Config {
 		Port:     getOrDefaultInt(v, "SFTP_PORT", 2222),
 		Username: getOrDefaultString(v, "SFTP_USERNAME", "foo"),
 		Password: getOrDefaultString(v, "SFTP_PASSWORD", "pass"),
-		Path:     getOrDefaultString(v, "SFTP_PATH", "/home/foo/upload"),
+		Path:     getOrDefaultString(v, "SFTP_PATH", "/upload"),
 	}
 
 	return cfg
