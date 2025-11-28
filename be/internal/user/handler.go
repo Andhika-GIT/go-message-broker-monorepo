@@ -61,6 +61,7 @@ func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 	h.uploadWorker.Queue(worker.UploadTask{
 		File:            file,
 		Filename:        header.Filename,
+		Filepath:        h.sftpPath,
 		QueueRoutingKey: h.mqRoutingKey.UserDirectImport,
 	})
 

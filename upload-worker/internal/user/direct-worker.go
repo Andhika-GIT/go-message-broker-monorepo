@@ -66,7 +66,7 @@ func (w *UserDirectUploadWorker) Start() {
 			log.Fatal(err.Error())
 		}
 
-		log.Printf("rows are %v", rows)
+		log.Printf("filepath is %s", uploadMsg.Filepath)
 
 	}
 
