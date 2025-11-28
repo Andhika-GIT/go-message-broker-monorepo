@@ -46,6 +46,7 @@ type SftpClientConfig struct {
 	Port     int
 	Username string
 	Password string
+	Path     string
 }
 
 type Config struct {
@@ -116,6 +117,7 @@ func InitConfig(v *viper.Viper) *Config {
 		Port:     getOrDefaultInt(v, "SFTP_PORT", 2222),
 		Username: getOrDefaultString(v, "SFTP_USERNAME", "foo"),
 		Password: getOrDefaultString(v, "SFTP_PASSWORD", "pass"),
+		Path:     getOrDefaultString(v, "SFTP_PATH", "/home/foo/upload"),
 	}
 
 	return cfg
