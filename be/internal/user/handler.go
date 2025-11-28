@@ -12,13 +12,15 @@ type UserHandler struct {
 	usecase      *UserUseCase
 	uploadWorker *worker.UploadWorker
 	mqRoutingKey *shared.RabbitMQRoutingKey
+	sftpPath     string
 }
 
-func NewUserHandler(usecase *UserUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey) *UserHandler {
+func NewUserHandler(usecase *UserUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey, sftpPath string) *UserHandler {
 	return &UserHandler{
 		usecase:      usecase,
 		uploadWorker: uploadWorker,
 		mqRoutingKey: mqRoutingKey,
+		sftpPath:     sftpPath,
 	}
 }
 

@@ -8,9 +8,9 @@ import (
 )
 
 func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker,
-	DB *gorm.DB, mqRoutingKey *shared.RabbitMQRoutingKey) {
+	DB *gorm.DB, cfg *shared.Config) {
 	repository := NewUserRepository(DB)
 	usecase := NewUserUseCase(repository, rmq, DB)
-	handler := NewUserHandler(usecase, uploadWorker, mqRoutingKey)
+	handler := NewUserHandler(usecase, uploadWorker, &cfg.RabbitMQRoutingKey, cfg.SftpClient.Path)
 	NewUserRoutes(r, handler)
 }

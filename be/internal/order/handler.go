@@ -12,13 +12,15 @@ type OrderHandler struct {
 	usecase      *OrderUseCase
 	uploadWorker *worker.UploadWorker
 	mqRoutingKey *shared.RabbitMQRoutingKey
+	sftpPath     string
 }
 
-func NewOrderHandler(usecase *OrderUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey) *OrderHandler {
+func NewOrderHandler(usecase *OrderUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey, sftpPath string) *OrderHandler {
 	return &OrderHandler{
 		usecase:      usecase,
 		uploadWorker: uploadWorker,
 		mqRoutingKey: mqRoutingKey,
+		sftpPath:     sftpPath,
 	}
 }
 
