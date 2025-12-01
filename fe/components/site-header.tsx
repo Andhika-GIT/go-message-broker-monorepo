@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { Notification } from "./molecules"
 
 export function SiteHeader() {
   return (
@@ -23,6 +24,7 @@ export function SiteHeader() {
               GitHub
             </a>
           </Button>
+          <Notification />
         </div>
       </div>
     </header>
