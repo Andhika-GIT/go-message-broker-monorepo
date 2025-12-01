@@ -5,6 +5,7 @@ import (
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/order"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	redispubsub "github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared/redis"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/user"
 	"github.com/go-chi/chi/v5"
 )
@@ -45,8 +46,11 @@ func InitApp() *chi.Mux {
 
 	}
 
-	userModule := user.NewUserModule(rmq, DB, &cfg.RabbitMQQueue, sftp)
-	order.NewOrderModule(rmq, DB, userModule.UserUseCase, &cfg.RabbitMQQueue, sftp)
+	redisClient := redispubsub.NewRedisClient(&cfg.RedisClient)
+	redisPublisher := redispubsub.NewPublisher(redisClient)
+
+	userModule := user.NewUserModule(rmq, redisPublisher, DB, &cfg.RabbitMQQueue, sftp)
+	order.NewOrderModule(rmq, redisPublisher, DB, userModule.UserUseCase, &cfg.RabbitMQQueue, sftp)
 
 	return r
 }
