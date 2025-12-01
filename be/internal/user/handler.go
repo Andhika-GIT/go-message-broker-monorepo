@@ -1,18 +1,26 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/worker"
 )
 
 type UserHandler struct {
-	usecase *UserUseCase
+	usecase      *UserUseCase
+	uploadWorker *worker.UploadWorker
+	mqRoutingKey *shared.RabbitMQRoutingKey
+	sftpPath     string
 }
 
-func NewUserHandler(usecase *UserUseCase) *UserHandler {
+func NewUserHandler(usecase *UserUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey, sftpPath string) *UserHandler {
 	return &UserHandler{
-		usecase: usecase,
+		usecase:      usecase,
+		uploadWorker: uploadWorker,
+		mqRoutingKey: mqRoutingKey,
+		sftpPath:     sftpPath,
 	}
 }
 
@@ -34,12 +42,28 @@ func (h *UserHandler) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 func (h *UserHandler) UploadUser(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
-	err := h.usecase.ReadFile(r)
+	file, header, err := r.FormFile("file")
 
 	if err != nil {
-		shared.SendJsonErrorResponse(w, err, nil)
+		shared.WriteError(500, fmt.Sprintf("failed to read file %s", err.Error()))
 		return
 	}
+
+	defer file.Close()
+
+	isFileExtensionCorrect := shared.IsAllowedExtension(header.Filename)
+
+	if !isFileExtensionCorrect {
+		shared.WriteError(400, "invalid file extension")
+		return
+	}
+
+	h.uploadWorker.Queue(worker.UploadTask{
+		File:            file,
+		Filename:        header.Filename,
+		Filepath:        h.sftpPath,
+		QueueRoutingKey: h.mqRoutingKey.UserDirectImport,
+	})
 
 	shared.SendJsonResponse(w, 200, "success", nil)
 }

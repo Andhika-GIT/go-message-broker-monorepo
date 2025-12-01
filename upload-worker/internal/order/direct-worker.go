@@ -6,26 +6,28 @@ import (
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/pkg/sftp"
 )
 
 type OrderDirectWorker struct {
-	Rmq      *shared.RabbitMqConsumer
-	UseCase  *OrderUseCase
-	QueueCfg *shared.RabbitMQQueue
+	Rmq        *shared.RabbitMqConsumer
+	UseCase    *OrderUseCase
+	QueueCfg   *shared.RabbitMQQueue
+	sftpClient *sftp.Client
 }
 
-func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase, cfg *shared.RabbitMQQueue) *OrderDirectWorker {
+func NewOrderDirectWorker(Rmq *shared.RabbitMqConsumer, UseCase *OrderUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *OrderDirectWorker {
 	return &OrderDirectWorker{
-		Rmq:      Rmq,
-		UseCase:  UseCase,
-		QueueCfg: cfg,
+		Rmq:        Rmq,
+		UseCase:    UseCase,
+		QueueCfg:   cfg,
+		sftpClient: sftpClient,
 	}
 }
 
 func (w *OrderDirectWorker) Start() {
 	defer w.Rmq.Close()
 
-	ch := make(chan OrderImport)
 	c := context.Background()
 
 	msgs, err := w.Rmq.Consume(w.QueueCfg.OrderDirectImport)
@@ -34,21 +36,37 @@ func (w *OrderDirectWorker) Start() {
 		log.Println(err.Error())
 	}
 
-	for i := 0; i <= 3; i++ {
-		go w.UseCase.CreateOrders(c, ch)
-	}
-
-	var orders []OrderImport
+	var uploadMsg shared.UploadMessage
 	for msg := range msgs {
-		err := json.Unmarshal(msg.Body, &orders)
+		err := json.Unmarshal(msg.Body, &uploadMsg)
 
 		if err != nil {
 			log.Panicln(err.Error())
 			continue
 		}
 
-		for _, order := range orders {
-			ch <- order
+		remoteFile, err := w.sftpClient.Open(uploadMsg.Filepath)
+
+		if err != nil {
+			log.Printf("error when reading sftp file: %v", err)
+			continue
 		}
+
+		rows, err := shared.ReadExcel(remoteFile)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		orders := w.UseCase.ReadOrderExcel(rows)
+
+		err = w.UseCase.CreateOrders(c, orders)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		log.Printf("rows are %v", rows)
+
 	}
 }

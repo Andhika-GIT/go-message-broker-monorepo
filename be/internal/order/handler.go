@@ -1,18 +1,26 @@
 package order
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/worker"
 )
 
 type OrderHandler struct {
-	usecase *OrderUseCase
+	usecase      *OrderUseCase
+	uploadWorker *worker.UploadWorker
+	mqRoutingKey *shared.RabbitMQRoutingKey
+	sftpPath     string
 }
 
-func NewOrderHandler(usecase *OrderUseCase) *OrderHandler {
+func NewOrderHandler(usecase *OrderUseCase, uploadWorker *worker.UploadWorker, mqRoutingKey *shared.RabbitMQRoutingKey, sftpPath string) *OrderHandler {
 	return &OrderHandler{
-		usecase: usecase,
+		usecase:      usecase,
+		uploadWorker: uploadWorker,
+		mqRoutingKey: mqRoutingKey,
+		sftpPath:     sftpPath,
 	}
 }
 
@@ -35,12 +43,28 @@ func (h *OrderHandler) GetAllOrders(w http.ResponseWriter, r *http.Request) {
 func (h *OrderHandler) UploadOrder(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 << 20)
 
-	err := h.usecase.ReadFile(r)
+	file, header, err := r.FormFile("file")
 
 	if err != nil {
-		shared.SendJsonErrorResponse(w, err, nil)
+		shared.WriteError(500, fmt.Sprintf("failed to read file %s", err.Error()))
 		return
 	}
+
+	defer file.Close()
+
+	isFileExtensionCorrect := shared.IsAllowedExtension(header.Filename)
+
+	if !isFileExtensionCorrect {
+		shared.WriteError(400, "invalid file extension")
+		return
+	}
+
+	h.uploadWorker.Queue(worker.UploadTask{
+		File:            file,
+		Filename:        header.Filename,
+		Filepath:        h.sftpPath,
+		QueueRoutingKey: h.mqRoutingKey.OrderDirectImport,
+	})
 
 	shared.SendJsonResponse(w, 200, "success", nil)
 }

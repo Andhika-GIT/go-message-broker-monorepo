@@ -6,26 +6,28 @@ import (
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	"github.com/pkg/sftp"
 )
 
 type UserDirectUploadWorker struct {
-	Rmq      *shared.RabbitMqConsumer
-	UseCase  *UserUseCase
-	QueueCfg *shared.RabbitMQQueue
+	Rmq        *shared.RabbitMqConsumer
+	UseCase    *UserUseCase
+	QueueCfg   *shared.RabbitMQQueue
+	sftpClient *sftp.Client
 }
 
-func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase, cfg *shared.RabbitMQQueue) *UserDirectUploadWorker {
+func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *UserDirectUploadWorker {
 	return &UserDirectUploadWorker{
-		Rmq:      Rmq,
-		UseCase:  UseCase,
-		QueueCfg: cfg,
+		Rmq:        Rmq,
+		UseCase:    UseCase,
+		QueueCfg:   cfg,
+		sftpClient: sftpClient,
 	}
 }
 
 func (w *UserDirectUploadWorker) Start() {
 	defer w.Rmq.Close()
 
-	ch := make(chan UserImport)
 	c := context.Background()
 
 	msgs, err := w.Rmq.Consume(w.QueueCfg.UserDirectImport)
@@ -34,27 +36,38 @@ func (w *UserDirectUploadWorker) Start() {
 		log.Println(err)
 	}
 
-	for i := 0; i <= 3; i++ {
-		// create 3 workers
-		go w.UseCase.CreateNewUsers(c, ch)
-	}
-
-	var users []UserImport
+	var uploadMsg shared.UploadMessage
 	for msg := range msgs {
-		err := json.Unmarshal(msg.Body, &users)
+		err := json.Unmarshal(msg.Body, &uploadMsg)
 
 		if err != nil {
 			log.Println("error when converting", err.Error())
 			continue
 		}
 
-		log.Printf("users is %v", users)
+		remoteFile, err := w.sftpClient.Open(uploadMsg.Filepath)
 
-		for _, user := range users {
-			ch <- user
+		if err != nil {
+			log.Printf("error when reading sftp file: %v", err)
+			continue
 		}
-	}
 
-	close(ch)
+		rows, err := shared.ReadExcel(remoteFile)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		newUsers := w.UseCase.ReadUsersExcel(rows)
+
+		err = w.UseCase.CreateNewUsers(c, newUsers)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		log.Printf("filepath is %s", uploadMsg.Filepath)
+
+	}
 
 }

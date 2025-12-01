@@ -6,7 +6,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewViper() *viper.Viper {
+func NewViper() (*viper.Viper, error) {
 	config := viper.New()
 
 	config.AddConfigPath(".")
@@ -15,8 +15,8 @@ func NewViper() *viper.Viper {
 	err := config.ReadInConfig()
 
 	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %w", err))
+		return nil, fmt.Errorf("error setup viper configuration: %w", err)
 	}
 
-	return config
+	return config, nil
 }
