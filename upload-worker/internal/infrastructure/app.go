@@ -46,7 +46,12 @@ func InitApp() *chi.Mux {
 
 	}
 
-	redisClient := redispubsub.NewRedisClient(&cfg.RedisClient)
+	redisClient, err := redispubsub.NewRedisClient(&cfg.RedisClient)
+	if err != nil {
+		log.Printf("failed to connect to redis: %v", err)
+
+	}
+
 	redisPublisher := redispubsub.NewPublisher(redisClient)
 
 	userModule := user.NewUserModule(rmq, redisPublisher, DB, &cfg.RabbitMQQueue, sftp)
