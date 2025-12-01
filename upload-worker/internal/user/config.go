@@ -14,7 +14,7 @@ type UserModule struct {
 func NewUserModule(rmq *shared.RabbitMqConsumer, rdsPublisher *redispubsub.Publisher, DB *gorm.DB, queueCfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *UserModule {
 	userUseCase := NewUserUseCase(&UserRepository{}, DB)
 
-	directUC := NewUserDirectUploadWorker(rmq, userUseCase, queueCfg, sftpClient)
+	directUC := NewUserDirectUploadWorker(rmq, rdsPublisher, userUseCase, queueCfg, sftpClient)
 
 	go directUC.Start()
 

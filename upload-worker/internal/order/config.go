@@ -11,7 +11,7 @@ import (
 func NewOrderModule(rmq *shared.RabbitMqConsumer, rdsPublisher *redispubsub.Publisher, DB *gorm.DB, userUseCase *user.UserUseCase, queueCfg *shared.RabbitMQQueue, sftpClient *sftp.Client) {
 	orderUseCase := NewOrderUseCase(&OrderRepository{}, DB, userUseCase)
 
-	directUC := NewOrderDirectWorker(rmq, orderUseCase, queueCfg, sftpClient)
+	directUC := NewOrderDirectWorker(rmq, rdsPublisher, orderUseCase, queueCfg, sftpClient)
 
 	go directUC.Start()
 

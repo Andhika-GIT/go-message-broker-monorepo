@@ -6,22 +6,25 @@ import (
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	redispubsub "github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared/redis"
 	"github.com/pkg/sftp"
 )
 
 type UserDirectUploadWorker struct {
-	Rmq        *shared.RabbitMqConsumer
-	UseCase    *UserUseCase
-	QueueCfg   *shared.RabbitMQQueue
-	sftpClient *sftp.Client
+	Rmq          *shared.RabbitMqConsumer
+	RdsPublisher *redispubsub.Publisher
+	UseCase      *UserUseCase
+	QueueCfg     *shared.RabbitMQQueue
+	sftpClient   *sftp.Client
 }
 
-func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *UserDirectUploadWorker {
+func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, RdsPublisher *redispubsub.Publisher, UseCase *UserUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *UserDirectUploadWorker {
 	return &UserDirectUploadWorker{
-		Rmq:        Rmq,
-		UseCase:    UseCase,
-		QueueCfg:   cfg,
-		sftpClient: sftpClient,
+		Rmq:          Rmq,
+		RdsPublisher: RdsPublisher,
+		UseCase:      UseCase,
+		QueueCfg:     cfg,
+		sftpClient:   sftpClient,
 	}
 }
 
