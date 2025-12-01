@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
@@ -64,6 +65,12 @@ func (w *UserDirectUploadWorker) Start() {
 		newUsers := w.UseCase.ReadUsersExcel(rows)
 
 		err = w.UseCase.CreateNewUsers(c, newUsers)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		err = w.RdsPublisher.PublishMessage(c, "notifications", fmt.Sprintf("successfully uploaded %s", uploadMsg.Filename))
 
 		if err != nil {
 			log.Print(err.Error())
