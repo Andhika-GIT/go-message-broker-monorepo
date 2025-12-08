@@ -1,7 +1,12 @@
 "use client";
 
-import { IconBell } from "@tabler/icons-react";
+import { IconBell, IconBellFilled } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export const Notification = () => {
   const [messages, setMessages] = useState<string[]>([]);
@@ -17,7 +22,6 @@ export const Notification = () => {
     ws.onopen = () => {
       console.log("WebSocket Connected!");
       setIsConnected(true);
-      setMessages((prev) => [...prev, "Connected to WebSocket server"]);
     };
 
     ws.onmessage = (event) => {
@@ -32,13 +36,11 @@ export const Notification = () => {
 
     ws.onerror = (error) => {
       console.error("WebSocket Error:", error);
-      setMessages((prev) => [...prev, "❌ Connection error"]);
     };
 
     ws.onclose = () => {
       console.log("WebSocket Disconnected");
       setIsConnected(false);
-      setMessages((prev) => [...prev, "Disconnected from server"]);
     };
 
     // Cleanup
@@ -48,6 +50,29 @@ export const Notification = () => {
       }
     };
   }, []);
-  return <div><IconBell size={28} /></div>;
-};
 
+  if (messages.length < 1) return (
+    <div><IconBell size={28} /></div>
+  )
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <div>
+          <IconBellFilled size={28} />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
+        <div className="grid gap-4">
+          {messages.length > 0 &&
+            messages.map((message) => (
+              <div className="grid gap-2">
+                <div className="p-2">
+                  <p className="text-sm">{message}</p>
+                </div>
+              </div>
+            ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
