@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
@@ -64,6 +65,12 @@ func (w *OrderDirectWorker) Start() {
 		orders := w.UseCase.ReadOrderExcel(rows)
 
 		err = w.UseCase.CreateOrders(c, orders)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		err = w.RdsPublisher.PublishMessage(c, "notifications", fmt.Sprintf("successfully uploaded %s", uploadMsg.Filename))
 
 		if err != nil {
 			log.Print(err.Error())
