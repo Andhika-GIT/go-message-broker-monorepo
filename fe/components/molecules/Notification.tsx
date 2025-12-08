@@ -14,8 +14,7 @@ export const Notification = () => {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    // URL WebSocket kamu
-    const wsUrl = "ws://localhost:9080"; // atau 'ws://localhost:9080/ws' tergantung konfig
+    const wsUrl = "ws://localhost:9080";
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
