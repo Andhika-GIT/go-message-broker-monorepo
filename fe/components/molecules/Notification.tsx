@@ -57,14 +57,14 @@ export const Notification = () => {
     <Popover>
       <PopoverTrigger asChild>
         <div>
-          <IconBellFilled size={28} />
+          <IconBellFilled color="red" size={28} />
         </div>
       </PopoverTrigger>
       <PopoverContent className="w-80">
         <div className="grid gap-4">
           {messages.length > 0 &&
-            messages.map((message) => (
-              <div className="grid gap-2">
+            messages.map((message, index) => (
+              <div key={index} className="grid gap-2">
                 <div className="p-2">
                   <p className="text-sm">{message}</p>
                 </div>
