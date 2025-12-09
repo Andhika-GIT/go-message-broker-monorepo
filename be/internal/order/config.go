@@ -7,6 +7,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type OrderModule struct {
+	useCase OrderUseCase
+}
+
 func NewOrderModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker, DB *gorm.DB, cfg *shared.Config) {
 	repository := NewOrderRepository(DB)
 	usecase := NewOrderUseCase(repository, rmq)

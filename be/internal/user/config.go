@@ -7,10 +7,18 @@ import (
 	"gorm.io/gorm"
 )
 
+type UserModule struct {
+	useCase UserUseCase
+}
+
 func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker,
-	DB *gorm.DB, cfg *shared.Config) {
+	DB *gorm.DB, cfg *shared.Config) *UserModule {
 	repository := NewUserRepository(DB)
 	usecase := NewUserUseCase(repository, rmq, DB)
 	handler := NewUserHandler(usecase, uploadWorker, &cfg.RabbitMQRoutingKey, cfg.SftpClient.Path)
 	NewUserRoutes(r, handler)
+
+	return &UserModule{
+		useCase: *usecase,
+	}
 }
