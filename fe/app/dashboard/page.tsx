@@ -4,8 +4,14 @@ import { SectionCards } from "@/components/section-cards";
 
 import data from "./data.json";
 import { columns } from './column'
+import { getDasboardData } from "../action/dashboard";
 
-export default function Page() {
+export default async function Page() {
+
+  const data = await getDasboardData()
+
+  console.log(data)
+
   return (
     <>
       <SectionCards />
