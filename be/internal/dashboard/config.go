@@ -7,5 +7,7 @@ import (
 )
 
 func NewDashboardModule(r chi.Router, userUseCase *user.UserUseCase, orderUseCase *order.OrderUseCase) {
+	handler := NewDashboardHandler(userUseCase, orderUseCase)
+	NewDashboardRoutes(r, handler)
 
 }
