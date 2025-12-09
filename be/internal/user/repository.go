@@ -17,6 +17,21 @@ func NewUserRepository(DB *gorm.DB) *UserRepository {
 	}
 }
 
+func (r *UserRepository) CountAll(c context.Context) (*int64, error) {
+	var totalRecords *int64
+
+	baseQuery := r.DB.WithContext(c).Model(&User{})
+
+	err := baseQuery.Count(totalRecords).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return totalRecords, nil
+
+}
+
 func (r *UserRepository) FindAll(c context.Context, paginationReq *shared.PaginationRequest, filter *UserFilter) (*shared.Paginated[User], error) {
 	var users []User
 	var totalRecords int64

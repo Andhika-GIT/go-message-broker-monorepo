@@ -19,6 +19,16 @@ func NewOrderUseCase(Repository *OrderRepository, rmq *shared.RabbitMqProducer) 
 	}
 }
 
+func (u *OrderUseCase) CountAllOrders(c context.Context) (*int64, error) {
+	totalOrders, err := u.Repository.CountAll(c)
+
+	if err != nil {
+		return nil, shared.WriteError(500, fmt.Sprintf("failed to count all orders %s", err.Error()))
+	}
+
+	return totalOrders, nil
+}
+
 func (u *OrderUseCase) FindAllOrders(c context.Context, paginationReq *shared.PaginationRequest, filter *OrderFilter) (*shared.Paginated[OrderResponse], error) {
 	paginated, err := u.Repository.FindAll(c, paginationReq, filter)
 

@@ -17,6 +17,21 @@ func NewOrderRepository(DB *gorm.DB) *OrderRepository {
 	}
 }
 
+func (r *OrderRepository) CountAll(c context.Context) (*int64, error) {
+	var totalRecords *int64
+
+	baseQuery := r.DB.WithContext(c).Model(&Order{})
+
+	err := baseQuery.Count(totalRecords).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return totalRecords, nil
+
+}
+
 func (r *OrderRepository) FindAll(c context.Context, paginationReq *shared.PaginationRequest, filter *OrderFilter) (*shared.Paginated[Order], error) {
 	var orders []Order
 	var totalRecords int64
