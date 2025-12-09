@@ -8,7 +8,7 @@ import (
 )
 
 type UserModule struct {
-	useCase UserUseCase
+	UseCase *UserUseCase
 }
 
 func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *worker.UploadWorker,
@@ -19,6 +19,6 @@ func NewUserModule(r chi.Router, rmq *shared.RabbitMqProducer, uploadWorker *wor
 	NewUserRoutes(r, handler)
 
 	return &UserModule{
-		useCase: *usecase,
+		UseCase: usecase,
 	}
 }
