@@ -18,17 +18,17 @@ func NewOrderRepository(DB *gorm.DB) *OrderRepository {
 }
 
 func (r *OrderRepository) CountAll(c context.Context) (*int64, error) {
-	var totalRecords *int64
+	var totalRecords int64
 
 	baseQuery := r.DB.WithContext(c).Model(&Order{})
 
-	err := baseQuery.Count(totalRecords).Error
+	err := baseQuery.Count(&totalRecords).Error
 
 	if err != nil {
 		return nil, err
 	}
 
-	return totalRecords, nil
+	return &totalRecords, nil
 
 }
 
