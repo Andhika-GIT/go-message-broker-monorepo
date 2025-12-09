@@ -20,9 +20,15 @@ export const Upload: React.FC<UploadProps> = ({ onFilesChange }) => {
   };
   return (
     <Dropzone
+      accept={{
+        'excel/xls': ['.xls'],
+        'excel/xlsx': ['.xlsx'],
+      }}
       maxSize={1024 * 1024 * 10}
       onDrop={handleDrop}
-      onError={(e) => {toast.error(e.message)}}
+      onError={(e) => {
+        toast.error(e.message);
+      }}
       src={files}
     >
       <DropzoneEmptyState />

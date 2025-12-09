@@ -3,25 +3,29 @@ package user
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
+	redispubsub "github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared/redis"
 	"github.com/pkg/sftp"
 )
 
 type UserDirectUploadWorker struct {
-	Rmq        *shared.RabbitMqConsumer
-	UseCase    *UserUseCase
-	QueueCfg   *shared.RabbitMQQueue
-	sftpClient *sftp.Client
+	Rmq          *shared.RabbitMqConsumer
+	RdsPublisher *redispubsub.Publisher
+	UseCase      *UserUseCase
+	QueueCfg     *shared.RabbitMQQueue
+	sftpClient   *sftp.Client
 }
 
-func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, UseCase *UserUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *UserDirectUploadWorker {
+func NewUserDirectUploadWorker(Rmq *shared.RabbitMqConsumer, RdsPublisher *redispubsub.Publisher, UseCase *UserUseCase, cfg *shared.RabbitMQQueue, sftpClient *sftp.Client) *UserDirectUploadWorker {
 	return &UserDirectUploadWorker{
-		Rmq:        Rmq,
-		UseCase:    UseCase,
-		QueueCfg:   cfg,
-		sftpClient: sftpClient,
+		Rmq:          Rmq,
+		RdsPublisher: RdsPublisher,
+		UseCase:      UseCase,
+		QueueCfg:     cfg,
+		sftpClient:   sftpClient,
 	}
 }
 
@@ -61,6 +65,12 @@ func (w *UserDirectUploadWorker) Start() {
 		newUsers := w.UseCase.ReadUsersExcel(rows)
 
 		err = w.UseCase.CreateNewUsers(c, newUsers)
+
+		if err != nil {
+			log.Print(err.Error())
+		}
+
+		err = w.RdsPublisher.PublishMessage(c, "notifications", fmt.Sprintf("successfully uploaded %s", uploadMsg.Filename))
 
 		if err != nil {
 			log.Print(err.Error())
