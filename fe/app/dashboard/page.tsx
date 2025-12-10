@@ -1,18 +1,17 @@
-import { ChartAreaInteractive } from "@/components/chart-area-interactive";
-import { DataTable } from "@/components/data-table";
 import { SectionCards } from "@/components/section-cards";
 
-import data from "./data.json";
-import { columns } from './column'
+import { getDasboardData } from "../action/dashboard";
 
-export default function Page() {
+export default async function Page() {
+
+  const data = await getDasboardData()
+
   return (
     <>
-      <SectionCards />
-      <div className="px-4 lg:px-6">
+      <SectionCards total_orders={data.total_orders} total_users={data.total_users}/>
+      {/* <div className="px-4 lg:px-6">
         <ChartAreaInteractive />
-      </div>
-      <DataTable columns={columns} data={data} />
+      </div> */}
     </>
   );
 }

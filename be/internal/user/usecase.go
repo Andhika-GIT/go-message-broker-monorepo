@@ -22,6 +22,16 @@ func NewUserUseCase(Repository *UserRepository, rmq *shared.RabbitMqProducer, DB
 	}
 }
 
+func (u *UserUseCase) CountAllUsers(c context.Context) (*int64, error) {
+	totalUsers, err := u.Repository.CountAll(c)
+
+	if err != nil {
+		return nil, shared.WriteError(500, fmt.Sprintf("failed to count all users %s", err.Error()))
+	}
+
+	return totalUsers, nil
+}
+
 func (u *UserUseCase) FindAllUsers(c context.Context, paginationReq *shared.PaginationRequest, filter *UserFilter) (*shared.Paginated[UserResponse], error) {
 
 	paginated, err := u.Repository.FindAll(c, paginationReq, filter)

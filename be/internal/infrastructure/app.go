@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"log"
 
+	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/dashboard"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/order"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/shared"
 	"github.com/Andhika-GIT/go-message-broker-monorepo/internal/user"
@@ -36,8 +37,9 @@ func InitApp() *chi.Mux {
 	}
 
 	uploadWorker := worker.NewUploadWorker(sftpClient, rmq, 3)
-	order.NewOrderModule(r, rmq, uploadWorker, db, cfg)
-	user.NewUserModule(r, rmq, uploadWorker, db, cfg)
+	orderModule := order.NewOrderModule(r, rmq, uploadWorker, db, cfg)
+	userModule := user.NewUserModule(r, rmq, uploadWorker, db, cfg)
+	dashboard.NewDashboardModule(r, userModule.UseCase, orderModule.UseCase)
 
 	go uploadWorker.Start()
 
